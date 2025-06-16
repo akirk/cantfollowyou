@@ -1,5 +1,6 @@
 <?php
 define( 't_title', "I can't follow you!" );
+define( 't_cant_follow_you_on_use_instead', "I can't follow you on %s, use %s instead!" );
 define( 't_language', 'English' );
 define( 't_hi', "Hi %s," );
 define( 't_friend', "Friend" );
@@ -9,7 +10,7 @@ define( 't_want_to_follow_you', "I saw that you are on %s and I’d like to foll
 define( 't_cant_follow_from_elsewhere', "But did you know that <strong>because I am not a user on %s</strong>, I cannot follow you from elsewhere?" );
 define( 't_no_technical_reason', 'There is no technical reason for this, the restriction is purely %s\'s choice because they want more users on their platform.' );
 define( 't_alternative_open_web', 'However, I believe you don\'t need to be on %s because <strong>there is an alternative on the open web</strong>!' );
-define( 't_called_fediverse', "It's called <strong>%s</strong> and it is part of the Fediverse, which is not controlled by a central entity and thus doesn't impose such restrictions." );
+define( 't_called_fediverse', "The alternative is called <strong>%s</strong> and it is part of the Fediverse, which is not controlled by a central entity and thus doesn't impose such restrictions." );
 define( 't_join_us', 'Interested? Join us and discover a better way to socialize online!' );
 define( 't_open_alternative', 'Most centralized networks have an open alternative, you can see them here:' );
 define( 't_learn_more', 'Learn more about the Fediverse' );
@@ -23,6 +24,7 @@ define( 't_idea_and_hosting', 'Idea and hosting by' );
 $translations = array(
 	'de' => array(
 		t_title => 'Ich kann dir nicht folgen!',
+		t_cant_follow_you_on_use_instead => 'Ich kann dir auf %s nicht folgen, benutze stattdessen %s!',
 		t_language => 'Deutsch',
 		t_hi => 'Hallo %s,',
 		t_friend => 'Freund',
@@ -32,7 +34,7 @@ $translations = array(
 		t_cant_follow_from_elsewhere => 'Aber wusstest du, dass ich dir, <strong>weil ich nicht auf %s bin</strong>, nicht von anderen Plattformen aus folgen kann?',
 		t_no_technical_reason => 'Es gibt keinen technischen Grund dafür. Dies ist eine absichtliche Entscheidung von %s, weil sie mehr Nutzer auf ihrer Plattform haben wollen.',
 		t_alternative_open_web => 'Ich glaube aber, dass du nicht auf %s sein musst, weil es <strong>eine Alternative im offenen Web gibt</strong>!',
-		t_called_fediverse => 'Sie heißt <strong>%s</strong> und ist Teil des Fediverse, das nicht von einer zentralen Instanz kontrolliert wird und daher keine solche Einschränkungen hat.',
+		t_called_fediverse => 'Die Alternative heißt <strong>%s</strong> und ist Teil des Fediverse, das nicht von einer zentralen Instanz kontrolliert wird und daher keine solche Einschränkungen hat.',
 		t_join_us => 'Interessiert? Schließe dich uns an und entdecke eine bessere Art, online zu kommunizieren!',
 		t_open_alternative => 'Die meisten zentralisierten Netzwerke haben eine offene Alternative, die du hier sehen kannst:',
 		t_learn_more => 'Erfahre mehr über das Fediverse',
@@ -62,11 +64,135 @@ function __( $string ) {
 	return $string;
 }
 
+$request_uri = strtok( urldecode( $_SERVER['REQUEST_URI'] ), '?');
+if ( isset( $_GET['url'] ) ) {
+	$request_uri = $_GET['url'];
+}
+$segments = explode('/', trim($request_uri, '/'), 2);
+$username = __( t_friend );
+$platform = __(t_a_closed_platform);
+$new_platform = __(t_the_fediverse);
+$new_platform_url = 'https://jointhefediverse.net/';
+$username_regex = '(?P<username>\/+[^\/]+)?';
+$regex_prefix = '(?:https?:\/\/)?(?:www\.)?';
+
+$new_platforms = array(
+	'Mastodon' => 'https://joinmastodon.org/',
+	'Misskey' => 'https://join.misskey.page/',
+	'Pleroma' => 'https://pleroma.social/',
+	'Pixelfed' => 'https://pixelfed.org/',
+	'Friendica' => 'https://friendi.ca/',
+	'PeerTube' => 'https://joinpeertube.org/',
+	'Lemmy' => 'https://join-lemmy.org/',
+	'Castopod' => 'https://castopod.org/',
+	'Mobilizon' => 'https://mobilizon.org/',
+	'Funkwhale' => 'https://www.funkwhale.audio/',
+);
+
+$groups = array(
+	'Micro Blogging' => array(
+		array( 'X', 'Twitter', 'Tumblr', 'Snapchat' ),
+		array( 'Mastodon', 'Misskey', 'Pleroma' ),
+	),
+	'Image Sharing' => array(
+		array( 'Instagram' ),
+		array( 'Pixelfed' ),
+	),
+	'Video Sharing' => array(
+		array( 'YouTube', 'TikTok', 'Vimeo' ),
+		array( 'PeerTube' ),
+	),
+	'Audio Sharing / Podcasting' => array(
+		array( 'Soundcloud', 'Bandcamp' ),
+		array( 'Castopod', 'Funkwhale' ),
+	),
+	'Forums and Discussions' => array(
+		array( 'Reddit' ),
+		array( 'Lemmy' ),
+	),
+	'Social Networks' => array(
+		array( 'Facebook' ),
+		array( 'Friendica' ),
+	),
+	'Events' => array(
+		array( 'Facebook' ),
+		array( 'Mobilizon' ),
+	),
+);
+
+$centralized_platforms = array(
+	'X' => array(
+		'regex' => 'x(?:\.com)?' . $username_regex,
+		'url_part' => 'x',
+	),
+	'Twitter' => array(
+		'regex' => '(?:twitter(?:\.com)?|tw)' . $username_regex,
+		'url_part' => 'tw',
+	),
+	'Instagram' => array(
+		'regex' => '(?:instagram(?:\.com)?|ig|insta)' . $username_regex,
+		'url_part' => 'insta',
+	),
+	'Facebook' => array(
+		'regex' => '(?:facebook(?:\.com)?|fb)' . $username_regex,
+		'url_part' => 'fb',
+	),
+	'TikTok' => array(
+		'regex' => '(?:tiktok(?:\.com)?)' . $username_regex,
+		'url_part' => 'tiktok',
+	),
+	'YouTube' => array(
+		'regex' => '(?:youtube(?:\.com)?|yt)' . $username_regex,
+		'url_part' => 'yt',
+	),
+	'Reddit' => array(
+		'regex' => 'reddit(?:\.com)?(?:\/u)?' . $username_regex,
+		'url_part' => 'reddit',
+	),
+	'Tumblr' => array(
+		'regex' => '(?:tumblr(?:\.com)?)' . $username_regex,
+		'url_part' => 'tumblr',
+	),
+	'Snapchat' => array(
+		'regex' => '(?:snapchat(?:\.com)?|sc)' . $username_regex,
+		'url_part' => 'sc',
+	),
+	'Soundcloud' => array(
+		'regex' => '(?:soundcloud(?:\.com)?|sc)' . $username_regex,
+		'url_part' => 'soundcloud',
+	),
+	'Bandcamp' => array(
+		'regex' => '(?:bandcamp(?:\.com)?)' . $username_regex,
+		'url_part' => 'bandcamp',
+	),
+	'Vimeo' => array(
+		'regex' => '(?:vimeo(?:\.com)?)' . $username_regex,
+		'url_part' => 'vimeo',
+	),
+);
+
+foreach ($centralized_platforms as $platform_name => $platform_data) {
+	if (preg_match('/^' . $regex_prefix . $platform_data['regex'] . '$/i', implode('/', $segments), $matches)) {
+		if (isset($matches['username']) && !empty($matches['username'])) {
+			$username = htmlspecialchars(ltrim($matches['username'], '/@'));
+		}
+		$platform = $platform_name;
+		foreach ( $groups as $group_name => $platforms ) {
+				if ( in_array( $platform_name, $platforms[0] ) ) {
+					$new_platform = $platforms[1][0];
+					break 2; // Break out of both loops
+				}
+			}
+		$new_platform_url = $new_platforms[$platform_data['new_platforms'][0]];
+		break;
+	}
+}
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="og:title" content="<?php echo htmlspecialchars(sprintf(__(t_cant_follow_you_on_use_instead), $platform, $new_platform)); ?>">
 	<title><?php echo htmlspecialchars(__(t_title)); ?></title>
 	<style>
 		:root {
@@ -149,102 +275,27 @@ function __( $string ) {
 				padding: 10px 20px;
 			}
 		}
+		table {
+			width: 100%;
+			margin-top: 20px;
+			border-collapse: collapse;
+		}
+		th {
+			text-align: left;
+			padding: 10px;
+			padding-bottom: 5px;
+		}
+		tr:nth-child(even) {
+			border: 1px solid #ccc;
+		}
+		td {
+			padding: 10px;
+			text-align: left;
+		}
 	</style>
 </head>
 <body>
-<?php
-$request_uri = strtok( urldecode( $_SERVER['REQUEST_URI'] ), '?');
-if ( isset( $_GET['url'] ) ) {
-	$request_uri = $_GET['url'];
-}
-$segments = explode('/', trim($request_uri, '/'), 2);
-$username = __( t_friend );
-$platform = __(t_a_closed_platform);
-$new_platform = __(t_the_fediverse);
-$new_platform_url = 'https://jointhefediverse.net/';
-$username_regex = '(?P<username>\/+[^\/]+)?';
-$regex_prefix = '(?:https?:\/\/)?(?:www\.)?';
 
-$new_platforms = array(
-	'Mastodon' => 'https://joinmastodon.org/',
-	'Misskey' => 'https://join.misskey.page/',
-	'Pleroma' => 'https://pleroma.social/',
-	'Pixelfed' => 'https://pixelfed.org/',
-	'Friendica' => 'https://friendi.ca/',
-	'PeerTube' => 'https://joinpeertube.org/',
-	'Lemmy' => 'https://join-lemmy.org/',
-);
-
-// Add translations for all platform messages using __() function
-$platforms = array(
-	array(
-		'regex' => 'x(?:\.com)?' . $username_regex,
-		'url_part' => 'x',
-		'name' => 'X',
-		'new_platforms' => array('Mastodon', 'Misskey', 'Pleroma'),
-	),
-	array(
-		'regex' => '(?:twitter\.com(?:\.com)?|tw)' . $username_regex,
-		'name' => 'Twitter',
-		'url_part' => 'tw',
-		'new_platforms' => array('Mastodon', 'Misskey', 'Pleroma'),
-	),
-	array(
-		'regex' => '(?:instagram(?:\.com)?|ig|insta)' . $username_regex,
-		'name' => 'Instagram',
-		'url_part' => 'insta',
-		'new_platforms' => array('Pixelfed'),
-	),
-	array(
-		'regex' => '(?:facebook(?:\.com)?|fb)' . $username_regex,
-		'name' => 'Facebook',
-		'url_part' => 'fb',
-		'new_platforms' => array('Friendica'),
-	),
-	array(
-		'regex' => '(?:tiktok(?:\.com)?)' . $username_regex,
-		'name' => 'TikTok',
-		'url_part' => 'tiktok',
-		'new_platforms' => array('PeerTube'),
-	),
-	array(
-		'regex' => '(?:youtube(?:\.com)?|yt)' . $username_regex,
-		'name' => 'YouTube',
-		'url_part' => 'yt',
-		'new_platforms' => array('PeerTube'),
-	),
-	array(
-		'regex' => 'reddit(?:\.com)?(?:\/u)?' . $username_regex,
-		'name' => 'Reddit',
-		'url_part' => 'reddit',
-		'new_platforms' => array('Lemmy'),
-	),
-	array(
-		'regex' => '(?:tumblr(?:\.com)?)' . $username_regex,
-		'name' => 'Tumblr',
-		'url_part' => 'tumblr',
-		'new_platforms' => array('Mastodon', 'Misskey', 'Pleroma'),
-	),
-	array(
-		'regex' => '(?:snapchat(?:\.com)?|sc)' . $username_regex,
-		'name' => 'Snapchat',
-		'url_part' => 'sc',
-		'new_platforms' => array('Mastodon', 'Misskey', 'Pleroma'),
-	),
-);
-
-foreach ($platforms as $platform_data) {
-	if (preg_match('/^' . $regex_prefix . $platform_data['regex'] . '$/i', implode('/', $segments), $matches)) {
-		if (isset($matches['username']) && !empty($matches['username'])) {
-			$username = htmlspecialchars(ltrim($matches['username'], '/@'));
-		}
-		$platform = $platform_data['name'];
-		$new_platform = $platform_data['new_platforms'][0];
-		$new_platform_url = $new_platforms[$platform_data['new_platforms'][0]];
-		break;
-	}
-}
-?>
 <select id="language-switcher">
 	<option value="en" <?php echo $lang === 'en' ? 'selected' : ''; ?>>
 		<?php echo htmlspecialchars(t_language); ?>
@@ -272,24 +323,37 @@ foreach ($platforms as $platform_data) {
 		<?php echo sprintf(__(t_alternative_open_web), htmlspecialchars($platform)); ?>
 	</p>
 	<p>
-		<?php echo sprintf(__(t_called_fediverse), htmlspecialchars($new_platform)); ?>
+		<?php echo sprintf(__(t_called_fediverse), '<a href="' . $new_platform_url . '">' . htmlspecialchars($new_platform) . '</a>'); ?>
 	</p>
 	<p>
 		<?php echo __(t_join_us); ?>
 	</p>
 	<details>
 		<summary><?php echo __(t_open_alternative); ?></summary>
-		<ul>
-			<?php foreach ($platforms as $platform_data) : ?>
-				<li>
-					<strong><?php echo htmlspecialchars($platform_data['name']); ?></strong> →
-					<?php foreach ($platform_data['new_platforms'] as $new_platform) : ?>
-						<a href="<?php echo htmlspecialchars($new_platforms[$new_platform]); ?>"><?php echo htmlspecialchars($new_platform); ?></a>
-						<?php if (end($platform_data['new_platforms']) !== $new_platform) : ?>, <?php endif; ?>
+		<table>
+			<?php foreach ($groups as $group_name => $platforms) : ?>
+				<tr>
+					<th colspan="3"><?php echo htmlspecialchars($group_name); ?></th>
+				</tr>
+				<tr>
+				<?php foreach ($platforms as $k => $platform_group) : ?>
+					<td>
+					<?php foreach ($platform_group as $platform_name) : ?>
+						<?php if (isset($new_platforms[$platform_name])) : ?>
+							<a href="<?php echo htmlspecialchars($new_platforms[$platform_name]); ?>"><?php echo htmlspecialchars($platform_name); ?></a>
+						<?php else: ?>
+							<?php echo htmlspecialchars($platform_name); ?>
+						<?php endif; ?>
+						<br>
 					<?php endforeach; ?>
-				</li>
+					</td>
+					<?php if ( $k === 0 ) : ?>
+						<td>→</td>
+					<?php endif; ?>
+				<?php endforeach; ?>
+				</tr>
 			<?php endforeach; ?>
-		</ul>
+		</table>
 	</details>
 
 	<a href="https://jointhefediverse.net" class="button"><?php echo __(t_learn_more); ?></a> <?php echo __(t_or); ?> <a href="https://videos.elenarossini.com/w/64VuNCccZNrP4u9MfgbhkN"><?php echo __(t_watch_video); ?></a>.
