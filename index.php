@@ -29,7 +29,7 @@ $translations = array(
 		t_a_closed_platform => 'eine geschlossene, zentralisierte Plattform',
 		t_the_fediverse => 'das Fediverse',
 		t_want_to_follow_you => 'Ich habe gesehen, dass du auf %s bist und ich möchte dir gerne folgen!',
-		t_cant_follow_from_elsewhere => 'Aber wusstest du, dass ich dir, <strong>weil ich nicht auf %s bin</strong> nicht von anderen Plattformen aus folgen kann?',
+		t_cant_follow_from_elsewhere => 'Aber wusstest du, dass ich dir, <strong>weil ich nicht auf %s bin</strong>, nicht von anderen Plattformen aus folgen kann?',
 		t_no_technical_reason => 'Es gibt keinen technischen Grund dafür. Dies ist eine absichtliche Entscheidung von %s, weil sie mehr Nutzer auf ihrer Plattform haben wollen.',
 		t_alternative_open_web => 'Ich glaube aber, dass du nicht auf %s sein musst, weil es <strong>eine Alternative im offenen Web gibt</strong>!',
 		t_called_fediverse => 'Sie heißt <strong>%s</strong> und ist Teil des Fediverse, das nicht von einer zentralen Instanz kontrolliert wird und daher keine solche Einschränkungen hat.',
@@ -154,6 +154,9 @@ function __( $string ) {
 <body>
 <?php
 $request_uri = strtok( urldecode( $_SERVER['REQUEST_URI'] ), '?');
+if ( isset( $_GET['url'] ) ) {
+	$request_uri = $_GET['url'];
+}
 $segments = explode('/', trim($request_uri, '/'), 2);
 $username = __( t_friend );
 $platform = __(t_a_closed_platform);
@@ -199,7 +202,7 @@ $platforms = array(
 		'new_platforms' => array('Friendica'),
 	),
 	array(
-		'regex' => '(?:tiktok(?:\.com)?|tt)' . $username_regex,
+		'regex' => '(?:tiktok(?:\.com)?)' . $username_regex,
 		'name' => 'TikTok',
 		'url_part' => 'tiktok',
 		'new_platforms' => array('PeerTube'),
@@ -211,7 +214,7 @@ $platforms = array(
 		'new_platforms' => array('PeerTube'),
 	),
 	array(
-		'regex' => '(?:reddit(?:\.com)?|r)' . $username_regex,
+		'regex' => 'reddit(?:\.com)?(?:\/u)?' . $username_regex,
 		'name' => 'Reddit',
 		'url_part' => 'reddit',
 		'new_platforms' => array('Lemmy'),
