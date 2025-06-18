@@ -13,6 +13,8 @@ define( 't_alternative_open_web', 'However, I believe you don\'t need to be on %
 define( 't_called_fediverse', "The alternative is called <strong>%s</strong> and it is part of the Fediverse, which is not controlled by a central entity and thus doesn't impose such restrictions." );
 define( 't_join_us', 'Interested? Join us and discover a better way to socialize online!' );
 define( 't_open_alternative', 'Most centralized networks have an open alternative, you can see them here:' );
+define( 't_what_makes_them_open', 'What makes these platforms more open?' );
+define( 't_based_on_activitypub', 'They are based on the ActivityPub protocol, an open standard that allows all these services to be interoperable with each other.' );
 define( 't_learn_more', 'Learn more about the Fediverse' );
 define( 't_or', 'or' );
 define( 't_watch_video', 'Watch "Introducing the Fediverse"' );
@@ -36,7 +38,9 @@ $translations = array(
 		t_alternative_open_web => 'Ich glaube aber, dass du nicht auf %s sein musst, weil es <strong>eine Alternative im offenen Web gibt</strong>!',
 		t_called_fediverse => 'Die Alternative heißt <strong>%s</strong> und ist Teil des Fediverse, das nicht von einer zentralen Instanz kontrolliert wird und daher keine solche Einschränkungen hat.',
 		t_join_us => 'Interessiert? Schließe dich uns an und entdecke eine bessere Art, online zu kommunizieren!',
-		t_open_alternative => 'Die meisten zentralisierten Netzwerke haben eine offene Alternative, die du hier sehen kannst:',
+		t_open_alternative => 'Die meisten zentralisierten Netzwerke haben eine offene Alternative:',
+		t_what_makes_them_open => 'Was macht diese Plattformen offener?',
+		t_based_on_activitypub => 'Sie basieren auf dem ActivityPub-Protokoll, einem offenen Standard, der es diesen Diensten ermöglicht, miteinander zu kommunizieren.',
 		t_learn_more => 'Erfahre mehr über das Fediverse',
 		t_or => 'oder',
 		t_watch_video => 'Schau dir "Einführung in das Fediverse" an',
@@ -47,11 +51,11 @@ $translations = array(
 	),
 );
 $lang = 'en';
-if (isset($_GET['lang']) && isset($translations[$_GET['lang']]) || 'en' === $_GET['lang']) {
+if ( isset( $_GET['lang'] ) && isset( $translations[$_GET['lang']] ) || 'en' === $_GET['lang'] ) {
 	$lang = $_GET['lang'];
 } else {
-	$browser_lang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
-	if (isset($translations[$browser_lang])) {
+	$browser_lang = substr( $_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2 );
+	if ( isset( $translations[$browser_lang] ) ) {
 		$lang = $browser_lang;
 	}
 }
@@ -64,14 +68,14 @@ function __( $string ) {
 	return $string;
 }
 
-$request_uri = strtok( urldecode( $_SERVER['REQUEST_URI'] ), '?');
+$request_uri = strtok( urldecode( $_SERVER['REQUEST_URI'] ), '?' );
 if ( isset( $_GET['url'] ) ) {
 	$request_uri = $_GET['url'];
 }
-$segments = explode('/', trim($request_uri, '/'), 2);
+$segments = explode( '/', trim( $request_uri, '/' ), 2 );
 $username = __( t_friend );
-$platform = __(t_a_closed_platform);
-$new_platform = __(t_the_fediverse);
+$platform = __( t_a_closed_platform );
+$new_platform = __( t_the_fediverse );
 $new_platform_url = 'https://jointhefediverse.net/';
 $username_regex = '(?P<username>\/+[^\/]+)?';
 $regex_prefix = '(?:https?:\/\/)?(?:www\.)?';
@@ -91,7 +95,7 @@ $new_platforms = array(
 
 $groups = array(
 	'Micro Blogging' => array(
-		array( 'X', 'Twitter', 'Tumblr', 'Snapchat' ),
+		array( 'X', 'Twitter', 'Tumblr' ),
 		array( 'Mastodon', 'Misskey', 'Pleroma' ),
 	),
 	'Image Sharing' => array(
@@ -153,10 +157,6 @@ $centralized_platforms = array(
 		'regex' => '(?:tumblr(?:\.com)?)' . $username_regex,
 		'url_part' => 'tumblr',
 	),
-	'Snapchat' => array(
-		'regex' => '(?:snapchat(?:\.com)?|sc)' . $username_regex,
-		'url_part' => 'sc',
-	),
 	'Soundcloud' => array(
 		'regex' => '(?:soundcloud(?:\.com)?|sc)' . $username_regex,
 		'url_part' => 'soundcloud',
@@ -171,10 +171,10 @@ $centralized_platforms = array(
 	),
 );
 
-foreach ($centralized_platforms as $platform_name => $platform_data) {
-	if (preg_match('/^' . $regex_prefix . $platform_data['regex'] . '$/i', implode('/', $segments), $matches)) {
-		if (isset($matches['username']) && !empty($matches['username'])) {
-			$username = htmlspecialchars(ltrim($matches['username'], '/@'));
+foreach ( $centralized_platforms as $platform_name => $platform_data ) {
+	if ( preg_match( '/^' . $regex_prefix . $platform_data['regex'] . '$/i', implode( '/', $segments ), $matches ) ) {
+		if ( isset( $matches['username'] ) && ! empty( $matches['username'] ) ) {
+			$username = htmlspecialchars( ltrim( $matches['username'], '/@' ) );
 		}
 		$platform = $platform_name;
 		foreach ( $groups as $group_name => $platforms ) {
@@ -188,16 +188,14 @@ foreach ($centralized_platforms as $platform_name => $platform_data) {
 	}
 }
 ?><!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo htmlspecialchars( $lang ); ?>">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="og:title" content="<?php echo htmlspecialchars(sprintf(__(t_cant_follow_you_on_use_instead), $platform, $new_platform)); ?>">
-	<title><?php echo htmlspecialchars(__(t_title)); ?></title>
+	<meta name="og:title" content="<?php echo htmlspecialchars( sprintf( __( t_cant_follow_you_on_use_instead ), $platform, $new_platform ) ); ?>">
+	<meta name="color-scheme" content="light dark">
+	<title><?php echo htmlspecialchars( __( t_title ) ); ?></title>
 	<style>
-		:root {
-			color-scheme: light dark;
-		}
 		body {
 			font-family: 'Arial', sans-serif;
 			background-color: light-dark( #ffffff, #121212 );
@@ -255,12 +253,6 @@ foreach ($centralized_platforms as $platform_name => $platform_data) {
 		summary {
 			cursor: pointer;
 		}
-
-		#language-switcher {
-			position: absolute;
-			top: 10px;
-			right: 10px;
-		}
 		@media (max-width: 600px) {
 			body {
 				padding: 10px;
@@ -292,57 +284,89 @@ foreach ($centralized_platforms as $platform_name => $platform_data) {
 			padding: 10px;
 			text-align: left;
 		}
+		blockquote {
+			background: light-dark( #f9f9f9, #222 );
+			border-left: 5px solid light-dark( #007bff, #66b3ff );
+			padding: 10px 20px;
+			margin: 20px 0;
+		}
+		#language-switcher-holder {
+			position: absolute;
+			top: 10px;
+			right: 10px;
+		}
+		#dark-mode-toggle {
+			background: none;
+			border: none;
+			cursor: pointer;
+			padding: 0;
+			vertical-align: bottom;
+		}
+		#dark-mode-toggle:focus {
+			outline: none;
+		}
+
 	</style>
 </head>
 <body>
 
-<select id="language-switcher">
-	<option value="en" <?php echo $lang === 'en' ? 'selected' : ''; ?>>
-		<?php echo htmlspecialchars(t_language); ?>
-	</option>
-<?php foreach ( $translations as $lang_code => $trans ) : ?>
-	<option value="<?php echo htmlspecialchars($lang_code); ?>" <?php echo $lang === $lang_code ? 'selected' : ''; ?>>
-		<?php echo htmlspecialchars($trans[t_language]); ?>
-	</option>
-<?php endforeach; ?>
-
-</select>
+<div id="language-switcher-holder">
+	<!-- dark/light mode switcher -->
+	<button id="dark-mode-toggle" onclick="document.body.classList.toggle('dark-mode');">
+		<svg id="dark-mode-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>
+		<svg id="light-mode-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+	</button>
+	<select id="language-switcher">
+		<option value="en" <?php echo $lang === 'en' ? 'selected' : ''; ?>>
+			<?php echo htmlspecialchars( t_language ); ?>
+		</option>
+	<?php foreach ( $translations as $lang_code => $trans ) : ?>
+		<option value="<?php echo htmlspecialchars( $lang_code ); ?>" <?php echo $lang === $lang_code ? 'selected' : ''; ?>>
+			<?php echo htmlspecialchars( $trans[t_language] ); ?>
+		</option>
+	<?php endforeach; ?>
+	</select>
+</div>
 
 <div class="container">
-	<h1><?php echo sprintf(__(t_hi), htmlspecialchars($username)); ?></h1>
+	<h1><?php echo sprintf( __( t_hi ), htmlspecialchars( $username ) ); ?></h1>
 	<p>
-		<?php echo sprintf(__(t_want_to_follow_you), htmlspecialchars($platform)); ?>
+		<?php echo sprintf( __( t_want_to_follow_you ), htmlspecialchars( $platform ) ); ?>
 	</p>
 	<p>
-		<?php echo sprintf(__(t_cant_follow_from_elsewhere), htmlspecialchars($platform)); ?>
+		<?php echo sprintf( __( t_cant_follow_from_elsewhere ), htmlspecialchars( $platform ) ); ?>
 	</p>
 	<p>
-		<?php echo sprintf(__(t_no_technical_reason), htmlspecialchars($platform)); ?>
+		<?php echo sprintf( __( t_no_technical_reason ), htmlspecialchars( $platform ) ); ?>
 	</p>
 	<p>
-		<?php echo sprintf(__(t_alternative_open_web), htmlspecialchars($platform)); ?>
+		<?php echo sprintf( __( t_alternative_open_web ), htmlspecialchars( $platform ) ); ?>
 	</p>
 	<p>
-		<?php echo sprintf(__(t_called_fediverse), '<a href="' . $new_platform_url . '">' . htmlspecialchars($new_platform) . '</a>'); ?>
+		<?php echo sprintf( __( t_called_fediverse ), '<a href="' . $new_platform_url . '">' . htmlspecialchars( $new_platform ) . '</a>' ); ?>
 	</p>
 	<p>
-		<?php echo __(t_join_us); ?>
+		<?php echo __( t_join_us ); ?>
 	</p>
 	<details>
-		<summary><?php echo __(t_open_alternative); ?></summary>
+		<summary><?php echo __( t_open_alternative ); ?></summary>
+		<blockquote>
+		<p><?php echo __( t_what_makes_them_open ); ?></p>
+		<p><?php echo str_replace( 'ActivityPub', '<a href="https://activitypub.rocks/">ActivityPub</a>', __( t_based_on_activitypub ) ); ?></p>
+	</blockquote>
 		<table>
-			<?php foreach ($groups as $group_name => $platforms) : ?>
+			<?php foreach ( $groups as $group_name => $platforms ) : ?>
 				<tr>
-					<th colspan="3"><?php echo htmlspecialchars($group_name); ?></th>
+					<th colspan="3"><?php echo htmlspecialchars( $group_name ); ?></th>
 				</tr>
 				<tr>
-				<?php foreach ($platforms as $k => $platform_group) : ?>
+				<?php foreach ( $platforms as $k => $platform_group ) : ?>
 					<td>
-					<?php foreach ($platform_group as $platform_name) : ?>
-						<?php if (isset($new_platforms[$platform_name])) : ?>
-							<a href="<?php echo htmlspecialchars($new_platforms[$platform_name]); ?>"><?php echo htmlspecialchars($platform_name); ?></a>
-						<?php else: ?>
-							<?php echo htmlspecialchars($platform_name); ?>
+					<?php foreach ( $platform_group as $platform_name ) : ?>
+						<?php if ( isset( $new_platforms[$platform_name] ) ) : ?>
+							<a href="<?php echo htmlspecialchars( $new_platforms[$platform_name] ); ?>"><?php echo htmlspecialchars( $platform_name ); ?></a>
+						<?php else : ?>
+							<?php echo htmlspecialchars( $platform_name ); ?>
 						<?php endif; ?>
 						<br>
 					<?php endforeach; ?>
@@ -356,12 +380,12 @@ foreach ($centralized_platforms as $platform_name => $platform_data) {
 		</table>
 	</details>
 
-	<a href="https://jointhefediverse.net" class="button"><?php echo __(t_learn_more); ?></a> <?php echo __(t_or); ?> <a href="https://videos.elenarossini.com/w/64VuNCccZNrP4u9MfgbhkN"><?php echo __(t_watch_video); ?></a>.
+	<a href="https://jointhefediverse.net" class="button"><?php echo __( t_learn_more ); ?></a> <?php echo __( t_or ); ?> <a href="https://videos.elenarossini.com/w/64VuNCccZNrP4u9MfgbhkN"><?php echo __( t_watch_video ); ?></a>.
 </div>
 
 <footer>
-	<p><?php echo __(t_send_to_friend); ?> <input type="url" placeholder="<?php echo __(t_enter_friend_url); ?>" id="friend-url" /></p>
-	<p><?php echo __(t_idea_and_hosting); ?> <a href="https://alex.kirk.at/">Alex Kirk</a></p>
+	<p><?php echo __( t_send_to_friend ); ?> <input type="url" placeholder="<?php echo __( t_enter_friend_url ); ?>" id="friend-url" /></p>
+	<p><?php echo __( t_idea_and_hosting ); ?> <a href="https://alex.kirk.at/">Alex Kirk</a></p>
 </footer>
 
 <script>
@@ -376,11 +400,11 @@ foreach ($centralized_platforms as $platform_name => $platform_data) {
 			const url = [];
 			let m;
 			if (parts.length >= 3) {
-				<?php foreach ($platforms as $platform_data) : ?>
+				<?php foreach ( $platforms as $platform_data ) : ?>
 					if (!url.length) {
-						m = friend_url.match(new RegExp('^<?php echo $regex_prefix . str_replace('(?P<', '(?<', $platform_data['regex']); ?>', 'i'));
+						m = friend_url.match(new RegExp('^<?php echo $regex_prefix . str_replace( '(?P<', '(?<', $platform_data['regex'] ); ?>', 'i'));
 						if (m) {
-							url.push('<?php echo strtolower($platform_data['url_part']); ?>');
+							url.push('<?php echo strtolower( $platform_data['url_part'] ); ?>');
 							if (m.groups && m.groups['username']) {
 								url.push(m.groups['username'].replace(/^[\/@]/, ''));
 							}
@@ -392,7 +416,7 @@ foreach ($centralized_platforms as $platform_name => $platform_data) {
 			if (url.length) {
 				window.location.href = '/' + url.join('/');
 			} else {
-				input.setCustomValidity("<?php echo __(t_sorry_unknown_platform); ?>");
+				input.setCustomValidity("<?php echo __( t_sorry_unknown_platform ); ?>");
 				input.reportValidity();
 			}
 		}
@@ -420,6 +444,32 @@ foreach ($centralized_platforms as $platform_name => $platform_data) {
 			url.searchParams.set('lang', lang);
 			window.location.href = url.toString();
 		});
+		const darkModeIcon = document.getElementById('dark-mode-icon');
+		const lightModeIcon = document.getElementById('light-mode-icon');
+		const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
+		const systemSettingDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+		document.getElementById('dark-mode-toggle').addEventListener('click', function() {
+
+			if ( ( metaColorScheme.content === 'light dark' && systemSettingDark ) || metaColorScheme.content === 'dark' ) {
+				metaColorScheme.content = 'light';
+				darkModeIcon.style.display = 'inline';
+				lightModeIcon.style.display = 'none';
+			} else {
+				metaColorScheme.content = 'dark';
+				darkModeIcon.style.display = 'none';
+				lightModeIcon.style.display = 'inline';
+			}
+		});
+		if ( systemSettingDark ) {
+			darkModeIcon.style.display = 'none';
+			lightModeIcon.style.display = 'inline';
+		} else {
+			darkModeIcon.style.display = 'inline';
+			lightModeIcon.style.display = 'none';
+
+		}
+
 	});
 </script>
 
