@@ -27,6 +27,8 @@ define( 't_send_to_friend', 'Want to send such a link to your friend?' );
 define( 't_enter_friend_url', "Enter your friend's URL" );
 define( 't_sorry_unknown_platform', "Sorry, I don't know this platform (yet)" );
 define( 't_idea_and_hosting', 'Idea and hosting by' );
+define( 't_contribute_github', 'Thank you for helping with translations and links on GitHub!' );
+
 
 $replace_no_technical_reason = array( 'on their platform' => 'on it' );
 $replace_called_fediverse = array( ' and it is part of the Fediverse,' => '' );
@@ -59,6 +61,7 @@ $translations = array(
 		t_enter_friend_url => 'Gib die URL deines Freundes ein',
 		t_sorry_unknown_platform => 'Entschuldigung, ich kenne diese Plattform (noch) nicht',
 		t_idea_and_hosting => 'Idee und Hosting von',
+		t_contribute_github => 'Danke, dass du mit Übersetzungen und Links auf GitHub hilfst!',
 	),
 );
 
@@ -448,7 +451,9 @@ if ( ! empty( $segments ) && $new_platform_url == 'https://jointhefediverse.net/
 
 <footer>
 	<p><?php echo __( t_send_to_friend ); ?> <input type="url" placeholder="<?php echo __( t_enter_friend_url ); ?>" id="friend-url" /></p>
-	<p class="hosting"><?php echo __( t_idea_and_hosting ); ?> <a href="https://alex.kirk.at/">Alex Kirk</a></p>
+	<p class="hosting"><?php echo __( t_idea_and_hosting ); ?> <a href="https://alex.kirk.at/">Alex Kirk</a>.
+		<a href="https://github.com/akirk/cantfollowyou"><?php echo __( t_contribute_github ); ?></a>
+	</p>
 </footer>
 
 <script>
