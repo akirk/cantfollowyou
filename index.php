@@ -75,7 +75,7 @@ if ( isset( $_GET['lang'] ) && isset( $translations[$_GET['lang']] ) || 'en' ===
 switch ( $lang ) {
 	case 'de':
 		$replace_no_technical_reason = array( 'von dieser ' => 'dieser ', 'ihrer Plattform' => 'darauf' );
-		$replace_called_fediverse = array( ' und ist Teil des Fediverse,' => '' );
+		$replace_called_fediverse = array( ' und ist Teil des Fediverse, das' => ', welches' );
 
 		break;
 }
