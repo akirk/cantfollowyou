@@ -4,7 +4,8 @@ define( 't_cant_follow_you_on_use_instead', "I can't follow you on %s, use %s in
 define( 't_language', 'English' );
 define( 't_hi', "Hi %s," );
 define( 't_friend', "Friend" );
-define( 't_a_closed_platform', 'a closed, centralized network' );
+define( 't_a_closed_platform', 'an unspecified closed and centralized network' );
+define( 't_this_closed_platform', 'this closed network' );
 define( 't_the_fediverse', 'the Fediverse' );
 define( 't_want_to_follow_you', "I saw that you are on %s and I’d like to follow you!" );
 define( 't_cant_follow_from_elsewhere', "But did you know that <strong>because I am not a user on %s</strong>, I cannot follow you from elsewhere?" );
@@ -12,9 +13,13 @@ define( 't_no_technical_reason', 'There is no technical reason for this, the res
 define( 't_alternative_open_web', 'However, I believe you don\'t need to be on %s because <strong>there is an alternative on the open web</strong>!' );
 define( 't_called_fediverse', "The alternative is called <strong>%s</strong> and it is part of the Fediverse, which is not controlled by a central entity and thus doesn't impose such restrictions." );
 define( 't_join_us', 'Interested? Join us and discover a better way to socialize online!' );
-define( 't_open_alternative', 'Most centralized networks have an open alternative, you can see them here:' );
+define( 't_open_alternative', 'Most centralized networks have an open alternative, click to see them here:' );
 define( 't_what_makes_them_open', 'What makes these platforms more open?' );
 define( 't_based_on_activitypub', 'They are based on the ActivityPub protocol, an open standard that allows all these services to be interoperable with each other.' );
+define( 't_what_makes_a_little_harder_to_use', 'What makes them a little harder to use?' );
+define( 't_need_to_choose_a_server', "Because they are not centralized, you need to choose a server (sometimes called instance). Often financed through donations or membership fees, they are rarely run by companies. Choice can be a bit overwhelming, but you'll be helped on the respective info sites:" );
+
+
 define( 't_learn_more', 'Learn more about the Fediverse' );
 define( 't_or', 'or' );
 define( 't_watch_video', 'Watch "Introducing the Fediverse"' );
@@ -23,6 +28,9 @@ define( 't_enter_friend_url', "Enter your friend's URL" );
 define( 't_sorry_unknown_platform', "Sorry, I don't know this platform (yet)" );
 define( 't_idea_and_hosting', 'Idea and hosting by' );
 
+$replace_no_technical_reason = array( 'on their platform' => 'on it' );
+$replace_called_fediverse = array( ' and it is part of the Fediverse,' => '' );
+
 $translations = array(
 	'de' => array(
 		t_title => 'Ich kann dir nicht folgen!',
@@ -30,17 +38,20 @@ $translations = array(
 		t_language => 'Deutsch',
 		t_hi => 'Hallo %s,',
 		t_friend => 'Freund',
-		t_a_closed_platform => 'einer geschlossenen, zentralisierten Plattform',
+		t_a_closed_platform => 'einer nicht näher genannten geschlossenen und zentralisierten Plattform',
+		t_this_closed_platform => 'dieser Plattform',
 		t_the_fediverse => 'das Fediverse',
 		t_want_to_follow_you => 'Ich habe gesehen, dass du auf %s bist und ich möchte dir gerne folgen!',
 		t_cant_follow_from_elsewhere => 'Aber wusstest du, dass ich dir, <strong>weil ich nicht auf %s bin</strong>, nicht von anderen Plattformen aus folgen kann?',
 		t_no_technical_reason => 'Es gibt keinen technischen Grund dafür. Dies ist eine absichtliche Entscheidung von %s, weil sie mehr Nutzer auf ihrer Plattform haben wollen.',
 		t_alternative_open_web => 'Ich glaube aber, dass du nicht auf %s sein musst, weil es <strong>eine Alternative im offenen Web gibt</strong>!',
 		t_called_fediverse => 'Die Alternative heißt <strong>%s</strong> und ist Teil des Fediverse, das nicht von einer zentralen Instanz kontrolliert wird und daher keine solche Einschränkungen hat.',
-		t_join_us => 'Interessiert? Schließe dich uns an und entdecke eine bessere Art, online zu kommunizieren!',
-		t_open_alternative => 'Die meisten zentralisierten Netzwerke haben eine offene Alternative:',
+		t_join_us => 'Interessiert? Mache es wie wir und entdecke eine bessere Art, online zu kommunizieren!',
+		t_open_alternative => 'Die meisten zentralisierten Netzwerke haben eine offene Alternative: (klicke hier)',
 		t_what_makes_them_open => 'Was macht diese Plattformen offener?',
 		t_based_on_activitypub => 'Sie basieren auf dem ActivityPub-Protokoll, einem offenen Standard, der es diesen Diensten ermöglicht, miteinander zu kommunizieren.',
+		t_what_makes_a_little_harder_to_use => 'Was macht sie ein wenig schwieriger zu benutzen?',
+		t_need_to_choose_a_server => 'Da sie nicht zentralisiert sind, musst du einen Server (auch Instanz genannt) wählen. Diese werden oft durch Spenden oder Mitgliedsbeiträge finanziert und werden nur selten von Unternehmen betrieben. Es kann etwas überwältigend sein, eine Wahl treffen zu müssen bevor es los geht, aber du erhälst auf den jeweiligen Infoseiten Hilfe dabei:',
 		t_learn_more => 'Erfahre mehr über das Fediverse',
 		t_or => 'oder',
 		t_watch_video => 'Schau dir "Einführung in das Fediverse" an',
@@ -50,15 +61,25 @@ $translations = array(
 		t_idea_and_hosting => 'Idee und Hosting von',
 	),
 );
+
 $lang = 'en';
+$browser_lang = substr( $_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2 );
+if ( isset( $translations[$browser_lang] ) ) {
+	$your_lang = $browser_lang;
+}
 if ( isset( $_GET['lang'] ) && isset( $translations[$_GET['lang']] ) || 'en' === $_GET['lang'] ) {
 	$lang = $_GET['lang'];
 } else {
-	$browser_lang = substr( $_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2 );
-	if ( isset( $translations[$browser_lang] ) ) {
-		$lang = $browser_lang;
-	}
+	$lang = $your_lang;
 }
+switch ( $lang ) {
+	case 'de':
+		$replace_no_technical_reason = array( 'von dieser ' => 'dieser ', 'ihrer Plattform' => 'darauf' );
+		$replace_called_fediverse = array( ' und ist Teil des Fediverse,' => '' );
+
+		break;
+}
+
 function __( $string ) {
 	global $translations, $lang;
 	if ( isset( $translations[$lang][$string] ) ) {
@@ -74,7 +95,11 @@ if ( isset( $_GET['url'] ) ) {
 }
 $segments = explode( '/', trim( $request_uri, '/' ), 2 );
 $username = __( t_friend );
+if ( count( $segments ) < 2 ) {
+	$segments[] = $username;
+}
 $platform = __( t_a_closed_platform );
+$this_platform = __( t_this_closed_platform );
 $new_platform = __( t_the_fediverse );
 $new_platform_url = 'https://jointhefediverse.net/';
 $username_regex = '(?P<username>\/+[^\/]+)?';
@@ -150,7 +175,7 @@ $centralized_platforms = array(
 		'url_part' => 'yt',
 	),
 	'Reddit' => array(
-		'regex' => 'reddit(?:\.com)?(?:\/u)?' . $username_regex,
+		'regex' => 'reddit(?:\.com)?(?:\/user)?' . $username_regex,
 		'url_part' => 'reddit',
 	),
 	'Tumblr' => array(
@@ -176,17 +201,22 @@ foreach ( $centralized_platforms as $platform_name => $platform_data ) {
 		if ( isset( $matches['username'] ) && ! empty( $matches['username'] ) ) {
 			$username = htmlspecialchars( ltrim( $matches['username'], '/@' ) );
 		}
-		$platform = $platform_name;
+		$this_platform = $platform = $platform_name;
 		foreach ( $groups as $group_name => $platforms ) {
-				if ( in_array( $platform_name, $platforms[0] ) ) {
-					$new_platform = $platforms[1][0];
-					break 2; // Break out of both loops
-				}
+			if ( in_array( $platform_name, $platforms[0] ) ) {
+				$new_platform = reset( $platforms[1] );
+				$new_platform_url = $new_platforms[$new_platform];
+				break 2; // Break out of both loops
 			}
-		$new_platform_url = $new_platforms[$platform_data['new_platforms'][0]];
+		}
 		break;
 	}
 }
+
+if ( ! empty( $segments ) && $new_platform_url == 'https://jointhefediverse.net/' && trim( $segments[0] ) ) {
+	$username = $segments[0];
+}
+
 ?><!DOCTYPE html>
 <html lang="<?php echo htmlspecialchars( $lang ); ?>">
 <head>
@@ -219,7 +249,7 @@ foreach ( $centralized_platforms as $platform_name => $platform_data ) {
 			border-radius: 15px;
 			box-shadow: 0 4px 20px light-dark( rgba(0, 0, 0, 0.1), rgba(99, 99, 99, 0.5) );
 			padding: 30px;
-			max-width: 650px;
+			max-width: 680px;
 		}
 		h1 {
 			font-size: 2.5em;
@@ -234,8 +264,24 @@ foreach ( $centralized_platforms as $platform_name => $platform_data ) {
 		a:any-link {
 			color: light-dark( #007bff, #66b3ff );
 		}
+		p.q {
+			margin-top: 1em;
+			margin-bottom: 0;
+		}
+		p.a {
+			margin-top: 0;
+			font-size: 95%;
+		}
 		footer a:any-link {
 			color: #666;
+		}
+		footer p.hosting {
+			color: #ccc;
+			margin-top: 1em;
+			font-size: 80%;
+		}
+		footer p.hosting a:any-link {
+			color: #ccc;
 		}
 		a:any-link.button {
 			display: inline-block;
@@ -257,6 +303,11 @@ foreach ( $centralized_platforms as $platform_name => $platform_data ) {
 			body {
 				padding: 10px;
 			}
+			.container {
+				background: transparent;
+				border: 0;
+				box-shadow: none;
+			}
 			h1 {
 				font-size: 2em;
 			}
@@ -265,6 +316,10 @@ foreach ( $centralized_platforms as $platform_name => $platform_data ) {
 			}
 			a.button {
 				padding: 10px 20px;
+			}
+			span.newline {
+				margin-top: .5em;
+				display: block;
 			}
 		}
 		table {
@@ -305,7 +360,13 @@ foreach ( $centralized_platforms as $platform_name => $platform_data ) {
 		#dark-mode-toggle:focus {
 			outline: none;
 		}
-
+		mark {
+			background-color: light-dark( #ff3, #000 );
+			color: light-dark( #000, #fff );
+			padding: 0 3px;
+			border-radius: 3px;
+			text-decoration: underline
+		}
 	</style>
 </head>
 <body>
@@ -334,16 +395,16 @@ foreach ( $centralized_platforms as $platform_name => $platform_data ) {
 		<?php echo sprintf( __( t_want_to_follow_you ), htmlspecialchars( $platform ) ); ?>
 	</p>
 	<p>
-		<?php echo sprintf( __( t_cant_follow_from_elsewhere ), htmlspecialchars( $platform ) ); ?>
+		<?php echo sprintf( __( t_cant_follow_from_elsewhere ), '<mark>' . htmlspecialchars( $this_platform ) . '</mark>' ); ?>
 	</p>
 	<p>
-		<?php echo sprintf( __( t_no_technical_reason ), htmlspecialchars( $platform ) ); ?>
+		<?php echo str_replace( array_keys( $replace_no_technical_reason ), array_values( $replace_no_technical_reason ), sprintf( __( t_no_technical_reason ), htmlspecialchars( $this_platform ) ) ); ?>
 	</p>
 	<p>
-		<?php echo sprintf( __( t_alternative_open_web ), htmlspecialchars( $platform ) ); ?>
+		<?php echo sprintf( __( t_alternative_open_web ), htmlspecialchars( $this_platform ) ); ?>
 	</p>
 	<p>
-		<?php echo sprintf( __( t_called_fediverse ), '<a href="' . $new_platform_url . '">' . htmlspecialchars( $new_platform ) . '</a>' ); ?>
+		<?php echo str_replace( array_keys( $replace_called_fediverse ), array_values( $replace_called_fediverse ), sprintf( __( t_called_fediverse ), '<a href="' . $new_platform_url . '">' . htmlspecialchars( $new_platform ) . '</a>' ) ); ?>
 	</p>
 	<p>
 		<?php echo __( t_join_us ); ?>
@@ -351,16 +412,18 @@ foreach ( $centralized_platforms as $platform_name => $platform_data ) {
 	<details>
 		<summary><?php echo __( t_open_alternative ); ?></summary>
 		<blockquote>
-		<p><?php echo __( t_what_makes_them_open ); ?></p>
-		<p><?php echo str_replace( 'ActivityPub', '<a href="https://activitypub.rocks/">ActivityPub</a>', __( t_based_on_activitypub ) ); ?></p>
-	</blockquote>
+		<p class="q"><?php echo __( t_what_makes_them_open ); ?></p>
+		<p class="a"><?php echo str_replace( 'ActivityPub', '<a href="https://activitypub.rocks/">ActivityPub</a>', __( t_based_on_activitypub ) ); ?></p>
+		<p class="q"><?php echo __( t_what_makes_a_little_harder_to_use ); ?></p>
+		<p class="a"><?php echo __( t_need_to_choose_a_server ); ?></p>
+		</blockquote>
 		<table>
-			<?php foreach ( $groups as $group_name => $platforms ) : ?>
+			<?php foreach ( $groups as $group_name => $platform_groups ) : ?>
 				<tr>
 					<th colspan="3"><?php echo htmlspecialchars( $group_name ); ?></th>
 				</tr>
 				<tr>
-				<?php foreach ( $platforms as $k => $platform_group ) : ?>
+				<?php foreach ( $platform_groups as $k => $platform_group ) : ?>
 					<td>
 					<?php foreach ( $platform_group as $platform_name ) : ?>
 						<?php if ( isset( $new_platforms[$platform_name] ) ) : ?>
@@ -380,12 +443,12 @@ foreach ( $centralized_platforms as $platform_name => $platform_data ) {
 		</table>
 	</details>
 
-	<a href="https://jointhefediverse.net" class="button"><?php echo __( t_learn_more ); ?></a> <?php echo __( t_or ); ?> <a href="https://videos.elenarossini.com/w/64VuNCccZNrP4u9MfgbhkN"><?php echo __( t_watch_video ); ?></a>.
+	<a href="https://jointhefediverse.net" class="button"><?php echo __( t_learn_more ); ?></a> <span class="newline"><?php echo __( t_or ); ?> <a href="https://videos.elenarossini.com/w/64VuNCccZNrP4u9MfgbhkN"><?php echo __( t_watch_video ); ?></a>.</span>
 </div>
 
 <footer>
 	<p><?php echo __( t_send_to_friend ); ?> <input type="url" placeholder="<?php echo __( t_enter_friend_url ); ?>" id="friend-url" /></p>
-	<p><?php echo __( t_idea_and_hosting ); ?> <a href="https://alex.kirk.at/">Alex Kirk</a></p>
+	<p class="hosting"><?php echo __( t_idea_and_hosting ); ?> <a href="https://alex.kirk.at/">Alex Kirk</a></p>
 </footer>
 
 <script>
@@ -400,7 +463,7 @@ foreach ( $centralized_platforms as $platform_name => $platform_data ) {
 			const url = [];
 			let m;
 			if (parts.length >= 3) {
-				<?php foreach ( $platforms as $platform_data ) : ?>
+				<?php foreach ( $centralized_platforms as $platform_data ) : ?>
 					if (!url.length) {
 						m = friend_url.match(new RegExp('^<?php echo $regex_prefix . str_replace( '(?P<', '(?<', $platform_data['regex'] ); ?>', 'i'));
 						if (m) {
@@ -412,7 +475,11 @@ foreach ( $centralized_platforms as $platform_name => $platform_data ) {
 					}
 				<?php endforeach; ?>
 			}
-			debugger;
+
+			if ( ! url.length && parts.length > 2 && ! parts[2].match( /\.[a-z]+$/ ) ) {
+				url.push( parts[2] );
+			}
+
 			if (url.length) {
 				window.location.href = '/' + url.join('/');
 			} else {
@@ -441,7 +508,11 @@ foreach ( $centralized_platforms as $platform_name => $platform_data ) {
 		document.getElementById('language-switcher').addEventListener('change', function() {
 			const lang = this.value;
 			const url = new URL(window.location.href);
-			url.searchParams.set('lang', lang);
+			if ( lang === '<?php echo htmlspecialchars( $your_lang ); ?>' ) {
+				url.searchParams.delete('lang');
+			} else {
+				url.searchParams.set('lang', lang);
+			}
 			window.location.href = url.toString();
 		});
 		const darkModeIcon = document.getElementById('dark-mode-icon');
