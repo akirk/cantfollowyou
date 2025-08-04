@@ -532,7 +532,7 @@ function render_main_ui( $target_platform = null, $target_username = null ) {
 	</button>
 	<select id="language-switcher">
 		<option value="en" <?php echo $lang === 'en' ? 'selected' : ''; ?>>
-			<?php echo htmlspecialchars( _t_attr( 'language' ) ); ?>
+			<?php echo htmlspecialchars( 'English' ); ?>
 		</option>
 	<?php foreach ( get_available_languages() as $lang_code => $lang_name ) : ?>
 		<?php if ( $lang_code !== 'en' ) : ?>
@@ -638,7 +638,7 @@ function render_main_ui( $target_platform = null, $target_username = null ) {
 <footer>
 	<p><?php echo _t( 'send_to_friend' ); ?> <input type="url" placeholder="<?php echo _t_attr( 'enter_friend_url' ); ?>" id="friend-url" /></p>
 	<p class="hosting"><?php echo _t( 'idea_and_hosting' ); ?> <a href="https://alex.kirk.at/">Alex Kirk</a>.
-		<a href="https://github.com/akirk/cantfollowyou"><?php echo _t( 'contribute_github' ); ?></a>
+		<a href="translate.php?lang=<?php echo $lang; ?>"><?php echo _t( 'contribute_github' ); ?></a>
 	</p>
 </footer>
 

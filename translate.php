@@ -13,7 +13,7 @@ if ( $review_lang ) {
 $available_languages = get_available_languages();
 $sample_platforms = array_merge( array( 'unknown' ), array_keys( $centralized_platforms ) );
 
-if ( $review_lang !== 'new' && ! array_key_exists( $review_lang, $available_languages ) ) {
+if ( $review_lang && $review_lang !== 'new' && ! array_key_exists( $review_lang, $available_languages ) ) {
 	// If the specified language is not available, redirect to main translation page
 	header( 'Location: /translate.php' );
 	exit;
