@@ -94,7 +94,7 @@ switch ( $lang ) {
 		break;
 }
 
-// Translation function with GitHub edit links for review mode
+// Translation function with in-place editing for review mode
 function _t( $key, $escape_html = true ) {
 	global $translations, $lang;
 	
@@ -103,15 +103,16 @@ function _t( $key, $escape_html = true ) {
 	$fallback_text = isset( $english_translations[$key] ) ? $english_translations[$key] : ucfirst( str_replace( '_', ' ', $key ) );
 	$translated_text = isset( $translations[$key] ) ? $translations[$key] : $fallback_text;
 	
-	// For translation review mode, wrap with hover functionality
+	// For translation review mode, wrap with editable data attributes
 	if ( isset( $_GET['translate-review'] ) ) {
-		$github_url = "https://github.com/akirk/cantfollowyou/edit/main/translations/" . $lang . ".json";
-		
 		$content = $escape_html ? htmlspecialchars( $translated_text ) : $translated_text;
 		
-		return '<span class="translation-text" onclick="window.open(\'' . $github_url . '\', \'_blank\')">' .
-			   '<span class="github-link">Edit ' . htmlspecialchars( $lang ) . '.json on GitHub</span>' .
-			   $content .
+		return '<span class="editable-translation" 
+				      data-key="' . htmlspecialchars( $key ) . '" 
+				      data-original="' . htmlspecialchars( $translated_text ) . '"
+				      data-escape-html="' . ( $escape_html ? '1' : '0' ) . '"
+				      contenteditable="true">' . 
+				$content . 
 			   '</span>';
 	}
 	
@@ -119,8 +120,68 @@ function _t( $key, $escape_html = true ) {
 }
 
 function _t_attr( $key ) {
-	// For attributes, always return plain text without hover functionality
-	return _t( $key, false );
+	global $translations, $lang;
+	
+	// For attributes, ALWAYS return plain text without any HTML or editing functionality
+	$english_translations = load_translations( 'en' );
+	$fallback_text = isset( $english_translations[$key] ) ? $english_translations[$key] : ucfirst( str_replace( '_', ' ', $key ) );
+	$translated_text = isset( $translations[$key] ) ? $translations[$key] : $fallback_text;
+	
+	return $translated_text;
+}
+
+// Helper function for sprintf with translations - handles review mode properly
+function _t_sprintf( $key, ...$args ) {
+	global $translations, $lang;
+	
+	// Get the plain text translation for sprintf
+	$english_translations = load_translations( 'en' );
+	$fallback_text = isset( $english_translations[$key] ) ? $english_translations[$key] : ucfirst( str_replace( '_', ' ', $key ) );
+	$translated_text = isset( $translations[$key] ) ? $translations[$key] : $fallback_text;
+	
+	// Apply sprintf to the plain text
+	$formatted_text = sprintf( $translated_text, ...$args );
+	
+	// If we're in review mode, wrap the final result
+	if ( isset( $_GET['translate-review'] ) ) {
+		return '<span class="editable-translation" 
+				      data-key="' . htmlspecialchars( $key ) . '" 
+				      data-original="' . htmlspecialchars( $translated_text ) . '"
+				      data-formatted="' . htmlspecialchars( $formatted_text ) . '"
+				      data-escape-html="1"
+				      contenteditable="true">' . 
+				htmlspecialchars( $formatted_text ) . 
+			   '</span>';
+	}
+	
+	return $formatted_text;
+}
+
+// Like _t_sprintf but for HTML content (doesn't escape HTML in review mode)
+function _t_sprintf_html( $key, ...$args ) {
+	global $translations, $lang;
+	
+	// Get the plain text translation for sprintf
+	$english_translations = load_translations( 'en' );
+	$fallback_text = isset( $english_translations[$key] ) ? $english_translations[$key] : ucfirst( str_replace( '_', ' ', $key ) );
+	$translated_text = isset( $translations[$key] ) ? $translations[$key] : $fallback_text;
+	
+	// Apply sprintf to the plain text
+	$formatted_text = sprintf( $translated_text, ...$args );
+	
+	// If we're in review mode, wrap the final result (but don't escape HTML)
+	if ( isset( $_GET['translate-review'] ) ) {
+		return '<span class="editable-translation" 
+				      data-key="' . htmlspecialchars( $key ) . '" 
+				      data-original="' . htmlspecialchars( $translated_text ) . '"
+				      data-formatted="' . htmlspecialchars( $formatted_text ) . '"
+				      data-escape-html="0"
+				      contenteditable="true">' . 
+				$formatted_text . 
+			   '</span>';
+	}
+	
+	return $formatted_text;
 }
 
 $request_uri = strtok( urldecode( $_SERVER['REQUEST_URI'] ), '?' );
@@ -272,6 +333,15 @@ function render_main_ui( $target_platform = null, $target_username = null ) {
 	if ( $target_username ) {
 		$username = $target_username;
 	}
+
+	// If this is for translator content only, render just the body content without head/html tags
+	$translator_mode = isset( $_GET['translator-content-only'] );
+	if ( $translator_mode ) {
+		echo '<div class="platform-preview"><h3>Platform: ' . htmlspecialchars( $target_platform ) . '</h3>';
+	}
+
+	// Regular full page rendering
+	if ( ! $translator_mode ) {
 	?><!DOCTYPE html>
 <html lang="<?php echo htmlspecialchars( $lang ); ?>">
 <head>
@@ -429,44 +499,49 @@ function render_main_ui( $target_platform = null, $target_username = null ) {
 			border-radius: 3px;
 			text-decoration: underline
 		}
-		.translation-text {
+		.editable-translation {
+			background: rgba(255, 255, 0, 0.1);
+			border: 1px dashed rgba(255, 193, 7, 0.5);
+			border-radius: 3px;
+			padding: 2px 4px;
+			cursor: text;
+			transition: all 0.2s;
 			position: relative;
-			cursor: pointer;
-			transition: background-color 0.2s;
 		}
-		.translation-text:hover {
-			background-color: #e3f2fd;
+		.editable-translation:hover {
+			background: rgba(255, 255, 0, 0.2);
+			border-color: rgba(255, 193, 7, 0.8);
 		}
-		.github-link {
+		.editable-translation:focus {
+			background: rgba(255, 255, 0, 0.3);
+			border-color: #ffc107;
+			outline: none;
+		}
+		.editable-translation.modified {
+			background: rgba(40, 167, 69, 0.1);
+			border-color: rgba(40, 167, 69, 0.6);
+		}
+		.editable-translation.modified::after {
+			content: '✓';
 			position: absolute;
-			top: -35px;
-			left: 0;
-			background: #333;
+			top: -8px;
+			right: -8px;
+			background: #28a745;
 			color: white;
-			padding: 5px 10px;
-			border-radius: 4px;
-			font-size: 12px;
-			white-space: nowrap;
-			opacity: 0;
-			pointer-events: none;
-			transition: opacity 0.2s;
-			z-index: 1000;
-		}
-		.translation-text:hover .github-link {
-			opacity: 1;
-		}
-		.github-link::after {
-			content: '';
-			position: absolute;
-			top: 100%;
-			left: 20px;
-			border: 5px solid transparent;
-			border-top-color: #333;
+			border-radius: 50%;
+			width: 16px;
+			height: 16px;
+			font-size: 10px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
 		}
 	</style>
 </head>
 <body>
+<?php } // End non-translator mode head section ?>
 
+<?php if ( ! $translator_mode ) : ?>
 <div id="language-switcher-holder">
 	<!-- dark/light mode switcher -->
 	<button id="dark-mode-toggle">
@@ -486,23 +561,24 @@ function render_main_ui( $target_platform = null, $target_username = null ) {
 	<?php endforeach; ?>
 	</select>
 </div>
+<?php endif; // End non-translator mode header ?>
 
 <div class="container">
-	<h1><?php echo sprintf( _t( 'hi' ), htmlspecialchars( $username ) ); ?></h1>
+	<h1><?php echo _t_sprintf( 'hi', htmlspecialchars( $username ) ); ?></h1>
 	<p>
-		<?php echo sprintf( _t( 'want_to_follow_you' ), htmlspecialchars( $platform ) ); ?>
+		<?php echo _t_sprintf( 'want_to_follow_you', htmlspecialchars( $platform ) ); ?>
 	</p>
 	<p>
-		<?php echo sprintf( _t( 'cant_follow_from_elsewhere' ), '<mark>' . htmlspecialchars( $this_platform ) . '</mark>' ); ?>
+		<?php echo _t_sprintf_html( 'cant_follow_from_elsewhere', '<mark>' . htmlspecialchars( $this_platform ) . '</mark>' ); ?>
 	</p>
 	<p>
-		<?php echo str_replace( array_keys( $replace_no_technical_reason ), array_values( $replace_no_technical_reason ), sprintf( _t( 'no_technical_reason' ), htmlspecialchars( $this_platform ) ) ); ?>
+		<?php echo str_replace( array_keys( $replace_no_technical_reason ), array_values( $replace_no_technical_reason ), _t_sprintf( 'no_technical_reason', htmlspecialchars( $this_platform ) ) ); ?>
 	</p>
 	<p>
-		<?php echo sprintf( _t( 'alternative_open_web' ), htmlspecialchars( $this_platform ) ); ?>
+		<?php echo _t_sprintf( 'alternative_open_web', htmlspecialchars( $this_platform ) ); ?>
 	</p>
 	<p>
-		<?php echo str_replace( array_keys( $replace_called_fediverse ), array_values( $replace_called_fediverse ), sprintf( _t( 'called_fediverse', false ), '<a href="' . $new_platform_url . '">' . htmlspecialchars( $new_platform ) . '</a>' ) ); ?>
+		<?php echo str_replace( array_keys( $replace_called_fediverse ), array_values( $replace_called_fediverse ), _t_sprintf_html( 'called_fediverse', '<a href="' . $new_platform_url . '">' . htmlspecialchars( $new_platform ) . '</a>' ) ); ?>
 	</p>
 	<p>
 		<?php echo _t( 'join_us' ); ?>
@@ -543,6 +619,10 @@ function render_main_ui( $target_platform = null, $target_username = null ) {
 
 	<a href="https://jointhefediverse.net" class="button"><?php echo _t( 'learn_more' ); ?></a> <span class="newline"><?php echo _t( 'or' ); ?> <a href="https://videos.elenarossini.com/w/64VuNCccZNrP4u9MfgbhkN"><?php echo str_replace( _t( 'video_title', false ), '"' . _t( 'video_title', false ) . '"', _t( 'watch_video', false ) ); ?></a>.</span>
 </div>
+
+<?php if ( $translator_mode ) : ?>
+</div> <!-- End platform-preview -->
+<?php else : ?>
 
 <footer>
 	<p><?php echo _t( 'send_to_friend' ); ?> <input type="url" placeholder="<?php echo _t_attr( 'enter_friend_url' ); ?>" id="friend-url" /></p>
@@ -646,12 +726,167 @@ function render_main_ui( $target_platform = null, $target_username = null ) {
 
 </body>
 </html>
+<?php endif; // End non-translator mode footer ?>
+	<?php
+}
+
+function render_new_language_ui() {
+	$english_translations = load_translations( 'en' );
+	?><!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Create New Language - I can't follow you!</title>
+	<style>
+		body {
+			font-family: 'Arial', sans-serif;
+			background-color: #f5f5f5;
+			margin: 20px;
+			color: #333;
+		}
+		.container {
+			max-width: 800px;
+			margin: 0 auto;
+			background: white;
+			padding: 30px;
+			border-radius: 10px;
+			box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+		}
+		h1 { color: #007bff; margin-bottom: 30px; }
+		.form-group {
+			margin-bottom: 20px;
+		}
+		.form-group label {
+			display: block;
+			font-weight: bold;
+			margin-bottom: 5px;
+			color: #495057;
+		}
+		.form-group input {
+			width: 100%;
+			padding: 10px;
+			border: 1px solid #dee2e6;
+			border-radius: 4px;
+			font-size: 16px;
+		}
+		.form-group small {
+			color: #6c757d;
+			font-size: 14px;
+		}
+		.button {
+			display: inline-block;
+			padding: 12px 24px;
+			background: #007bff;
+			color: white;
+			text-decoration: none;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 16px;
+		}
+		.button:hover { background: #0056b3; }
+		.button-secondary {
+			background: #6c757d;
+		}
+		.button-secondary:hover { background: #545b62; }
+		.success {
+			background: #d4edda;
+			border: 1px solid #c3e6cb;
+			color: #155724;
+			padding: 12px;
+			border-radius: 4px;
+			margin: 20px 0;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>🌍 Create New Language</h1>
+		<p>Create a new translation file based on the English template. All English text will be copied as a starting point for translation.</p>
+		
+		<form id="new-language-form">
+			<div class="form-group">
+				<label for="lang-code">Language Code</label>
+				<input type="text" id="lang-code" placeholder="e.g., fr, de, es, pt-br" required>
+				<small>Use standard language codes (ISO 639-1). For variants, use format like 'pt-br' for Brazilian Portuguese.</small>
+			</div>
+			
+			<div class="form-group">
+				<label for="lang-name">Language Name</label>
+				<input type="text" id="lang-name" placeholder="e.g., Français, Deutsch, Español" required>
+				<small>The native name of the language as it should appear in the language selector.</small>
+			</div>
+			
+			<button type="submit" class="button">📝 Create Language File</button>
+			<a href="/" class="button button-secondary">← Back to Main Site</a>
+		</form>
+		
+		<div id="result"></div>
+	</div>
+
+	<script>
+		document.getElementById('new-language-form').addEventListener('submit', function(e) {
+			e.preventDefault();
+			
+			const langCode = document.getElementById('lang-code').value.trim().toLowerCase();
+			const langName = document.getElementById('lang-name').value.trim();
+			
+			if (!langCode || !langName) {
+				alert('Please fill in both fields');
+				return;
+			}
+			
+			// Validate language code format
+			if (!/^[a-z]{2}(-[a-z]{2})?$/.test(langCode)) {
+				alert('Language code should be in format like "fr", "de", or "pt-br"');
+				return;
+			}
+			
+			// Create the translation object based on English
+			const englishTranslations = <?php echo json_encode( $english_translations ); ?>;
+			const newTranslations = {...englishTranslations};
+			newTranslations.language = langName;
+			
+			// Generate JSON
+			const json = JSON.stringify(newTranslations, null, 2);
+			
+			// Create download
+			const blob = new Blob([json], { type: 'application/json' });
+			const url = URL.createObjectURL(blob);
+			
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = langCode + '.json';
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+			
+			// Show success message
+			document.getElementById('result').innerHTML = 
+				'<div class="success">' +
+				'<strong>✅ Success!</strong> Translation file <code>' + langCode + '.json</code> has been downloaded. ' +
+				'Upload this file to the <code>translations/</code> directory and ' +
+				'<a href="?translate-review=' + encodeURIComponent(langCode) + '">start translating →</a>' +
+				'</div>';
+		});
+	</script>
+</body>
+</html>
 	<?php
 }
 
 function render_translator_ui( $review_lang ) {
 	$available_languages = get_available_languages();
 	$sample_platforms = array( 'Twitter', 'Instagram', 'Facebook', 'TikTok' );
+	
+	// Handle new language creation
+	if ( $review_lang === 'new' ) {
+		render_new_language_ui();
+		return;
+	}
+	
 	?><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -697,8 +932,6 @@ function render_translator_ui( $review_lang ) {
 			background: #f8f9fa;
 		}
 		.platform-content {
-			display: none;
-			border: 2px solid #007bff;
 			border-radius: 8px;
 			margin: 20px 0;
 			overflow: hidden;
@@ -719,37 +952,97 @@ function render_translator_ui( $review_lang ) {
 			background: #6c757d;
 		}
 		.button-secondary:hover { background: #545b62; }
+		.translation-stats {
+			background: #f8f9fa;
+			border: 1px solid #dee2e6;
+			border-radius: 4px;
+			padding: 15px;
+			margin: 15px 0;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			flex-wrap: wrap;
+		}
+		.translation-stats span {
+			font-weight: bold;
+		}
+		#modified-count {
+			color: #28a745;
+		}
+		.translation-context {
+			background: white;
+			border: 1px solid #dee2e6;
+			border-radius: 8px;
+			padding: 20px;
+			margin: 10px 0;
+		}
+		.translation-section {
+			margin-bottom: 25px;
+			border-bottom: 1px solid #e9ecef;
+			padding-bottom: 15px;
+		}
+		.translation-section:last-child {
+			border-bottom: none;
+		}
+		.translation-section h4 {
+			color: #495057;
+			margin-bottom: 15px;
+			font-family: monospace;
+			background: #f8f9fa;
+			padding: 5px 10px;
+			border-radius: 4px;
+			border-left: 4px solid #007bff;
+		}
+		.translation-item {
+			margin-bottom: 10px;
+			padding: 10px;
+			background: #f8f9fa;
+			border-radius: 4px;
+		}
+		.translation-item strong {
+			color: #6c757d;
+			font-size: 0.9em;
+		}
+		.platform-preview {
+			border-radius: 8px;
+			padding: 20px;
+			margin: 10px 0;
+			background: white;
+		}
+		.platform-preview h3 {
+			color: #007bff;
+			margin-top: 0;
+			text-align: center;
+			border-bottom: 1px solid #dee2e6;
+			padding-bottom: 10px;
+		}
+		.placeholder-warning {
+			background: #fff3cd;
+			border: 1px solid #ffeaa7;
+			color: #856404;
+			padding: 8px 12px;
+			border-radius: 4px;
+			font-size: 13px;
+			margin-top: 5px;
+			display: none;
+		}
+		.placeholder-warning.show {
+			display: block;
+		}
+		.editable-translation.placeholder-error {
+			border-color: #dc3545;
+			background: rgba(220, 53, 69, 0.1);
+		}
 	</style>
 </head>
 <body>
 	<div class="container">
 		<h1>🌍 Translation Review<?php if ( $review_lang && $review_lang !== 'all' ) echo ' - ' . htmlspecialchars( $review_lang ); ?></h1>
-		<p>This page shows all translations for different platforms to help translators review and improve the content. Hover over text to see GitHub edit links.</p>
-
-		<div class="controls">
-			<h3>📝 Contribute Translations</h3>
-			<p>Want to add or improve translations? You can easily create a pull request on GitHub:</p>
-			<a href="https://github.com/akirk/cantfollowyou/compare" class="button" target="_blank">Create Pull Request</a>
-			<a href="https://github.com/akirk/cantfollowyou/issues/new?title=Translation%20suggestion&body=Language:%0APlatform:%0ASuggested%20text:%0A" class="button button-secondary" target="_blank">Report Translation Issue</a>
-
-			<div class="platform-selector">
-				<label for="platform-select">Select Platform to Review:</label>
-				<select id="platform-select">
-					<option value="">All Platforms</option>
-					<?php foreach ( $sample_platforms as $platform ) : ?>
-						<option value="<?php echo htmlspecialchars( strtolower( $platform ) ); ?>"><?php echo htmlspecialchars( $platform ); ?></option>
-					<?php endforeach; ?>
-				</select>
-				<button onclick="showAllPlatforms()">Show All</button>
-			</div>
-		</div>
+		<p>This page shows all translations for different platforms with in-place editing. Click on any highlighted text to edit it directly, then export your changes as JSON.</p>
 
 		<?php foreach ( $sample_platforms as $sample_platform ) : ?>
 		<div class="platform-content" id="platform-<?php echo htmlspecialchars( strtolower( $sample_platform ) ); ?>">
 			<?php
-			// Capture the main UI output for this platform
-			ob_start();
-
 			// Set language to review language or default
 			global $lang, $translations;
 			$original_lang = $lang;
@@ -762,28 +1055,37 @@ function render_translator_ui( $review_lang ) {
 				}
 			}
 
+			// Use a special flag to render only content for translator UI
+			$_GET['translator-content-only'] = true;
 			render_main_ui( $sample_platform, 'TestUser' );
-			$content = ob_get_clean();
+			unset( $_GET['translator-content-only'] );
 
 			// Restore original language
 			$lang = $original_lang;
 			$translations = $original_translations;
-
-			echo $content;
 			?>
 		</div>
 		<?php endforeach; ?>
 
 		<div class="controls">
-			<h3>🚀 Quick Actions</h3>
-			<p>Ready to contribute? Here are some quick actions:</p>
-			<a href="https://github.com/akirk/cantfollowyou/fork" class="button" target="_blank">Fork Repository</a>
-			<a href="https://github.com/akirk/cantfollowyou/tree/main/translations" class="button button-secondary" target="_blank">View Translation Files</a>
-			<a href="/" class="button button-secondary">← Back to Main Site</a>
+			<div id="json-preview">
+				<textarea id="json-textarea" readonly rows="15" style="width: 100%; font-family: monospace; font-size: 12px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px;"></textarea>
+			</div>
+
+			<div class="translation-stats">
+				<span>Modified: <span id="modified-count">0</span> translations</span>
+				<button id="export-json" class="button" disabled>📥 Export JSON</button>
+				<button id="copy-json" class="button button-secondary" disabled>📋 Copy to Clipboard</button>
+				<button id="reset-all" class="button button-secondary">🔄 Reset All Changes</button>
+			</div>
 		</div>
+
 	</div>
 
 	<script>
+		// Track modifications
+		let modifications = {};
+		
 		function showPlatform(platform) {
 			// Hide all platform content
 			document.querySelectorAll('.platform-content').forEach(el => {
@@ -804,17 +1106,368 @@ function render_translator_ui( $review_lang ) {
 			}
 		}
 
-		function showAllPlatforms() {
-			document.getElementById('platform-select').value = '';
-			showPlatform('');
+		function updateModificationCount() {
+			const count = Object.keys(modifications).length;
+			document.getElementById('modified-count').textContent = count;
+			
+			const exportBtn = document.getElementById('export-json');
+			const copyBtn = document.getElementById('copy-json');
+			
+			if (count > 0) {
+				exportBtn.disabled = false;
+				copyBtn.disabled = false;
+			} else {
+				exportBtn.disabled = true;
+				copyBtn.disabled = true;
+			}
+
+			// Update JSON preview if it's visible
+			updateJSONPreview();
 		}
 
-		document.getElementById('platform-select').addEventListener('change', function() {
-			showPlatform(this.value);
-		});
+		function updateJSONPreview() {
+			const textarea = document.getElementById('json-textarea');
+			const translations = generateUpdatedJSON();
+			const json = JSON.stringify(translations, null, 2);
+			textarea.value = json;
+		}
 
-		// Show all platforms by default
-		showAllPlatforms();
+		function generateUpdatedJSON() {
+			// Start with original translations (we'll get these from the first editable element's data)
+			const firstElement = document.querySelector('.editable-translation');
+			if (!firstElement) return {};
+
+			// Load the original translations (we need to reconstruct this from the page)
+			const originalTranslations = {};
+			document.querySelectorAll('.editable-translation').forEach(el => {
+				const key = el.dataset.key;
+				const original = el.dataset.original;
+				originalTranslations[key] = original;
+			});
+
+			// Apply modifications
+			const updatedTranslations = {...originalTranslations, ...modifications};
+			return updatedTranslations;
+		}
+
+		function exportJSON() {
+			const translations = generateUpdatedJSON();
+			const json = JSON.stringify(translations, null, 2);
+			
+			const blob = new Blob([json], { type: 'application/json' });
+			const url = URL.createObjectURL(blob);
+			
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = '<?php echo htmlspecialchars( $review_lang ); ?>.json';
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+		}
+
+		function copyToClipboard() {
+			const translations = generateUpdatedJSON();
+			const json = JSON.stringify(translations, null, 2);
+			
+			navigator.clipboard.writeText(json).then(() => {
+				const btn = document.getElementById('copy-json');
+				const originalText = btn.textContent;
+				btn.textContent = '✅ Copied!';
+				setTimeout(() => {
+					btn.textContent = originalText;
+				}, 2000);
+			}).catch(err => {
+				console.error('Failed to copy: ', err);
+				// Fallback for older browsers
+				const textarea = document.createElement('textarea');
+				textarea.value = json;
+				document.body.appendChild(textarea);
+				textarea.select();
+				document.execCommand('copy');
+				document.body.removeChild(textarea);
+			});
+		}
+
+		function resetAllChanges() {
+			if (Object.keys(modifications).length === 0) return;
+			
+			if (confirm('Are you sure you want to reset all changes? This cannot be undone.')) {
+				modifications = {};
+				
+				// Reset all editable elements
+				document.querySelectorAll('.editable-translation.modified').forEach(el => {
+					const original = el.dataset.original;
+					const escapeHtml = el.dataset.escapeHtml === '1';
+					
+					if (escapeHtml) {
+						el.textContent = original;
+					} else {
+						el.innerHTML = original;
+					}
+					
+					el.classList.remove('modified');
+				});
+				
+				updateModificationCount();
+			}
+		}
+
+		// Initialize when page loads
+		document.addEventListener('DOMContentLoaded', function() {
+			// Set up editable translations
+			document.querySelectorAll('.editable-translation').forEach(el => {
+				// Add warning div after each editable element
+				const warning = document.createElement('div');
+				warning.className = 'placeholder-warning';
+				warning.innerHTML = '⚠️ Warning: This text should contain placeholders (%s) but none were found. Check your translation.';
+				el.parentNode.insertBefore(warning, el.nextSibling);
+
+				el.addEventListener('input', function() {
+					const key = this.dataset.key;
+					const original = this.dataset.original;
+					const formatted = this.dataset.formatted;
+					const escapeHtml = this.dataset.escapeHtml === '1';
+
+					// Get current content - preserve HTML for non-escaped elements
+					const current = escapeHtml ? (this.textContent || this.innerText) : this.innerHTML;
+					
+					// Check for placeholder validation
+					const hasPlaceholders = formatted && original !== formatted;
+					const originalPlaceholderCount = (original.match(/%s/g) || []).length;
+					
+					// If this has placeholders, we need to convert the edited content back to template format
+					let finalValue = current;
+					let placeholderError = false;
+					
+					if (hasPlaceholders) {
+						// This is a sprintf template - convert user's edit back to template
+						finalValue = convertToTemplate(original, formatted, current);
+						
+						// Check if the converted template has the right number of placeholders
+						const newPlaceholderCount = (finalValue.match(/%s/g) || []).length;
+						if (newPlaceholderCount !== originalPlaceholderCount) {
+							placeholderError = true;
+						}
+					}
+					
+					// Update visual state based on placeholder validation
+					const warningEl = this.nextSibling;
+					if (placeholderError) {
+						this.classList.add('placeholder-error');
+						if (warningEl && warningEl.classList.contains('placeholder-warning')) {
+							warningEl.classList.add('show');
+						}
+					} else {
+						this.classList.remove('placeholder-error');
+						if (warningEl && warningEl.classList.contains('placeholder-warning')) {
+							warningEl.classList.remove('show');
+						}
+					}
+					
+					// Update the modification tracking
+					if (finalValue !== original) {
+						modifications[key] = finalValue;
+					} else {
+						delete modifications[key];
+					}
+					
+					// Sync this change to all other elements with the same key
+					syncTranslationKey(key, current, finalValue);
+					
+					updateModificationCount();
+				});
+
+				// Handle Enter key to prevent line breaks in simple text
+				el.addEventListener('keydown', function(e) {
+					if (e.key === 'Enter' && this.dataset.escapeHtml === '1') {
+						e.preventDefault();
+					}
+				});
+			});
+
+			// Function to convert user's edited content back to template format
+			function convertToTemplate(originalTemplate, formattedContent, userEditedContent) {
+				// Find all %s placeholders in the original template
+				const placeholders = originalTemplate.match(/%s/g) || [];
+				if (placeholders.length === 0) {
+					return userEditedContent; // No placeholders, return as-is
+				}
+
+				// Extract the substituted values by comparing the original template with formatted content
+				// We need to find what HTML was substituted for each %s
+				const substitutedHTMLValues = [];
+				let remainingFormatted = formattedContent;
+				let remainingTemplate = originalTemplate;
+
+				for (let i = 0; i < placeholders.length; i++) {
+					const beforePlaceholder = remainingTemplate.split('%s')[0];
+					const afterPlaceholder = remainingTemplate.substring(beforePlaceholder.length + 2); // +2 for '%s'
+					
+					// Find the before part in the formatted content
+					const beforeIndex = remainingFormatted.indexOf(beforePlaceholder);
+					if (beforeIndex !== -1) {
+						remainingFormatted = remainingFormatted.substring(beforeIndex + beforePlaceholder.length);
+					}
+					
+					// Find where the next part starts
+					let valueEnd = remainingFormatted.length;
+					if (afterPlaceholder) {
+						const nextPartStart = afterPlaceholder.split('%s')[0];
+						if (nextPartStart) {
+							const nextPartIndex = remainingFormatted.indexOf(nextPartStart);
+							if (nextPartIndex !== -1) {
+								valueEnd = nextPartIndex;
+							}
+						}
+					}
+					
+					const substitutedHTMLValue = remainingFormatted.substring(0, valueEnd);
+					substitutedHTMLValues.push(substitutedHTMLValue);
+					
+					// Update remaining strings for next iteration
+					remainingFormatted = remainingFormatted.substring(valueEnd);
+					remainingTemplate = afterPlaceholder;
+				}
+
+				// Now convert the user's edited content back to template format
+				// Replace the HTML values with %s placeholders
+				let result = userEditedContent;
+				for (let i = substitutedHTMLValues.length - 1; i >= 0; i--) { // Reverse order to avoid index issues
+					const htmlValue = substitutedHTMLValues[i];
+					if (htmlValue && result.includes(htmlValue)) {
+						result = result.replace(htmlValue, '%s');
+					} else {
+						// If exact HTML match fails, try to find by text content
+						const tempDiv = document.createElement('div');
+						tempDiv.innerHTML = htmlValue;
+						const textValue = tempDiv.textContent || tempDiv.innerText || '';
+						if (textValue && result.includes(textValue)) {
+							result = result.replace(textValue, '%s');
+						}
+					}
+				}
+
+				return result;
+			}
+
+			// Function to sync changes across all elements with the same translation key
+			function syncTranslationKey(key, displayValue, templateValue) {
+				document.querySelectorAll('.editable-translation[data-key="' + key + '"]').forEach(element => {
+					// Don't update the element that triggered the change
+					if (element === document.activeElement) return;
+					
+					// Update the content
+					const original = element.dataset.original;
+					const formatted = element.dataset.formatted;
+					
+					if (formatted && original !== formatted) {
+						// This is a sprintf element - we need to re-format the template with this element's parameters
+						const newFormatted = reformatTemplate(templateValue, original, formatted);
+						if (element.dataset.escapeHtml === '1') {
+							element.textContent = newFormatted;
+						} else {
+							element.innerHTML = newFormatted;
+						}
+					} else {
+						// Simple translation - just copy the display value
+						if (element.dataset.escapeHtml === '1') {
+							element.textContent = displayValue;
+						} else {
+							element.innerHTML = displayValue;
+						}
+					}
+					
+					// Update visual state
+					if (templateValue !== original) {
+						element.classList.add('modified');
+					} else {
+						element.classList.remove('modified');
+					}
+					
+					// Validate placeholders for synced elements
+					const originalPlaceholders = (original.match(/%s/g) || []).length;
+					const templatePlaceholders = (templateValue.match(/%s/g) || []).length;
+					const placeholderError = originalPlaceholders !== templatePlaceholders;
+					
+					// Find the warning element for this synced element
+					const warningEl = element.nextElementSibling;
+					
+					if (placeholderError) {
+						element.classList.add('placeholder-error');
+						if (warningEl && warningEl.classList.contains('placeholder-warning')) {
+							warningEl.classList.add('show');
+						}
+					} else {
+						element.classList.remove('placeholder-error');
+						if (warningEl && warningEl.classList.contains('placeholder-warning')) {
+							warningEl.classList.remove('show');
+						}
+					}
+				});
+			}
+
+			// Function to re-format a template with the same parameters as the original
+			function reformatTemplate(newTemplate, originalTemplate, originalFormatted) {
+				// Extract the parameters from the original formatting
+				const placeholders = originalTemplate.match(/%s/g) || [];
+				if (placeholders.length === 0) {
+					return newTemplate; // No placeholders
+				}
+
+				// For HTML content, extract the substituted values from the original formatted HTML
+				// by comparing it with the original template
+				const substitutedHTMLValues = [];
+				let remainingFormatted = originalFormatted;
+				let remainingTemplate = originalTemplate;
+
+				for (let i = 0; i < placeholders.length; i++) {
+					const beforePlaceholder = remainingTemplate.split('%s')[0];
+					const afterPlaceholder = remainingTemplate.substring(beforePlaceholder.length + 2);
+					
+					// Remove the before part (handle HTML vs text)
+					const beforeIndex = remainingFormatted.indexOf(beforePlaceholder);
+					if (beforeIndex !== -1) {
+						remainingFormatted = remainingFormatted.substring(beforeIndex + beforePlaceholder.length);
+					}
+					
+					// Find where the next part starts
+					let valueEnd = remainingFormatted.length;
+					if (afterPlaceholder) {
+						const nextPartStart = afterPlaceholder.split('%s')[0];
+						if (nextPartStart) {
+							const nextPartIndex = remainingFormatted.indexOf(nextPartStart);
+							if (nextPartIndex !== -1) {
+								valueEnd = nextPartIndex;
+							}
+						}
+					}
+					
+					const substitutedHTMLValue = remainingFormatted.substring(0, valueEnd);
+					substitutedHTMLValues.push(substitutedHTMLValue);
+					
+					remainingFormatted = remainingFormatted.substring(valueEnd);
+					remainingTemplate = afterPlaceholder;
+				}
+
+				// Apply the same HTML substitutions to the new template
+				let result = newTemplate;
+				for (let i = 0; i < substitutedHTMLValues.length && i < placeholders.length; i++) {
+					result = result.replace('%s', substitutedHTMLValues[i]);
+				}
+				
+				return result;
+			}
+
+			// Set up button handlers
+			document.getElementById('export-json').addEventListener('click', exportJSON);
+			document.getElementById('copy-json').addEventListener('click', copyToClipboard);
+			document.getElementById('reset-all').addEventListener('click', resetAllChanges);
+
+
+			// Initialize JSON preview
+			updateJSONPreview();
+		});
 	</script>
 </body>
 </html>
