@@ -554,6 +554,16 @@ if ( ! $review_lang ) {
 	<script>
 		// Track modifications
 		let modifications = {};
+		let hasUnsavedChanges = false;
+
+		// Prevent accidental navigation when there are unsaved changes
+		window.addEventListener('beforeunload', function(e) {
+			if ( hasUnsavedChanges && Object.keys( modifications ).length > 0 ) {
+				e.preventDefault();
+				e.returnValue = 'You have unsaved translation changes. Are you sure you want to leave?';
+				return e.returnValue;
+			}
+		});
 		
 		function showPlatform(platform) {
 			// Hide all platform content
@@ -709,6 +719,35 @@ if ( ! $review_lang ) {
 			console.log('Platform preview refresh needed - some changes may require page reload to see in preview');
 		}
 
+		// Function to prevent navigation on buttons and links during inline editing
+		function preventNavigationDuringEditing(e) {
+			// Check if we're currently editing (any element has focus and is editable)
+			const activeElement = document.activeElement;
+			const isEditing = activeElement && activeElement.contentEditable === 'true';
+
+			if ( isEditing && hasUnsavedChanges ) {
+				// Prevent the default action
+				e.preventDefault();
+				e.stopPropagation();
+
+				// Show a warning message
+				const confirmLeave = confirm( 'You are currently editing a translation. Do you want to finish editing before navigating away?' );
+				if ( confirmLeave ) {
+					// Blur the current element to finish editing
+					activeElement.blur();
+					// Allow the navigation after a short delay
+					setTimeout( function() {
+						if ( e.target.tagName === 'A' ) {
+							window.location.href = e.target.href;
+						} else if ( e.target.tagName === 'BUTTON' && e.target.onclick ) {
+							e.target.onclick();
+						}
+					}, 100 );
+				}
+				return false;
+			}
+		}
+
 		// Initialize when page loads
 		document.addEventListener('DOMContentLoaded', function() {
 			// Set up editable translations
@@ -764,10 +803,13 @@ if ( ! $review_lang ) {
 					// Update the modification tracking
 					if (finalValue !== original) {
 						modifications[key] = finalValue;
+						hasUnsavedChanges = true;
 						// Remove untranslated class when content is modified
 						this.classList.remove('untranslated');
 					} else {
 						delete modifications[key];
+						// Check if we still have modifications
+						hasUnsavedChanges = Object.keys( modifications ).length > 0;
 					}
 					
 					// Sync this change to all other elements with the same key
@@ -991,6 +1033,16 @@ if ( ! $review_lang ) {
 
 			// Initialize JSON preview
 			updateJSONPreview();
+
+			// Add event listeners to all buttons and links to prevent navigation during editing
+			document.querySelectorAll( 'a, button' ).forEach( function( element ) {
+				element.addEventListener( 'click', preventNavigationDuringEditing );
+			});
+
+			// Add event listeners to form submissions as well
+			document.querySelectorAll( 'form' ).forEach( function( form ) {
+				form.addEventListener( 'submit', preventNavigationDuringEditing );
+			});
 		});
 	</script>
 </body>
