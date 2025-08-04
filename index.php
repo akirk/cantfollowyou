@@ -357,11 +357,29 @@ switch ( $lang ) {
 
 function __( $string ) {
 	global $translations, $lang;
-	if ( isset( $translations[$lang][$string] ) ) {
-		return $translations[$lang][$string];
+	
+	$translated_text = isset( $translations[$lang][$string] ) ? $translations[$lang][$string] : $string;
+	
+	// For translation review mode, wrap with hover functionality
+	if ( isset( $_GET['translate-review'] ) ) {
+		$backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS );
+		$line_number = isset( $backtrace[0]['line'] ) ? $backtrace[0]['line'] : 1;
+		$github_url = "https://github.com/akirk/cantfollowyou/edit/main/index.php#L" . $line_number;
+		
+		return '<span class="translation-text" onclick="window.open(\'' . $github_url . '\', \'_blank\')">' .
+			   '<span class="github-link">Edit on GitHub (Line ' . $line_number . ')</span>' .
+			   htmlspecialchars( $translated_text ) .
+			   '</span>';
 	}
-	// Fallback to the original string if no translation is found
-	return $string;
+	
+	return $translated_text;
+}
+
+function __attr( $string ) {
+	global $translations, $lang;
+	
+	// For attributes, always return plain text without hover functionality
+	return isset( $translations[$lang][$string] ) ? $translations[$lang][$string] : $string;
 }
 
 $request_uri = strtok( urldecode( $_SERVER['REQUEST_URI'] ), '?' );
@@ -492,14 +510,35 @@ if ( ! empty( $segments ) && $new_platform_url == 'https://jointhefediverse.net/
 	$username = $segments[0];
 }
 
-?><!DOCTYPE html>
+function render_main_ui( $target_platform = null, $target_username = null ) {
+	global $lang, $username, $platform, $this_platform, $new_platform, $new_platform_url, $replace_no_technical_reason, $replace_called_fediverse, $groups, $new_platforms;
+
+	// Override defaults if provided
+	if ( $target_platform ) {
+		$platform = $target_platform;
+		$this_platform = $target_platform;
+
+		// Find the appropriate alternative
+		foreach ( $groups as $group_name => $platform_groups ) {
+			if ( in_array( $target_platform, $platform_groups[0] ) ) {
+				$new_platform = reset( $platform_groups[1] );
+				$new_platform_url = $new_platforms[$new_platform];
+				break;
+			}
+		}
+	}
+
+	if ( $target_username ) {
+		$username = $target_username;
+	}
+	?><!DOCTYPE html>
 <html lang="<?php echo htmlspecialchars( $lang ); ?>">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="og:title" content="<?php echo htmlspecialchars( sprintf( __( t_cant_follow_you_on_use_instead ), $platform, $new_platform ) ); ?>">
+	<meta name="og:title" content="<?php echo htmlspecialchars( sprintf( __attr( t_cant_follow_you_on_use_instead ), $platform, $new_platform ) ); ?>">
 	<meta name="color-scheme" content="light dark">
-	<title><?php echo htmlspecialchars( __( t_title ) ); ?></title>
+	<title><?php echo htmlspecialchars( __attr( t_title ) ); ?></title>
 	<style>
 		body {
 			font-family: 'Arial', sans-serif;
@@ -570,6 +609,13 @@ if ( ! empty( $segments ) && $new_platform_url == 'https://jointhefediverse.net/
 		}
 		a.button:hover {
 			background-color: light-dark( #0056b3, #3380cc );
+		}
+		a.button-secondary:any-link {
+			background-color: light-dark( #6c757d, #888 );
+			color: light-dark( #fff, #000 );
+		}
+		a.button-secondary:hover {
+			background-color: light-dark( #5a6268, #666 );
 		}
 		summary {
 			cursor: pointer;
@@ -642,6 +688,40 @@ if ( ! empty( $segments ) && $new_platform_url == 'https://jointhefediverse.net/
 			border-radius: 3px;
 			text-decoration: underline
 		}
+		.translation-text {
+			position: relative;
+			cursor: pointer;
+			transition: background-color 0.2s;
+		}
+		.translation-text:hover {
+			background-color: #e3f2fd;
+		}
+		.github-link {
+			position: absolute;
+			top: -35px;
+			left: 0;
+			background: #333;
+			color: white;
+			padding: 5px 10px;
+			border-radius: 4px;
+			font-size: 12px;
+			white-space: nowrap;
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 0.2s;
+			z-index: 1000;
+		}
+		.translation-text:hover .github-link {
+			opacity: 1;
+		}
+		.github-link::after {
+			content: '';
+			position: absolute;
+			top: 100%;
+			left: 20px;
+			border: 5px solid transparent;
+			border-top-color: #333;
+		}
 	</style>
 </head>
 <body>
@@ -654,7 +734,7 @@ if ( ! empty( $segments ) && $new_platform_url == 'https://jointhefediverse.net/
 	</button>
 	<select id="language-switcher">
 		<option value="en" <?php echo $lang === 'en' ? 'selected' : ''; ?>>
-			<?php echo htmlspecialchars( t_language ); ?>
+			<?php echo htmlspecialchars( __attr( t_language ) ); ?>
 		</option>
 	<?php foreach ( $translations as $lang_code => $trans ) : ?>
 		<option value="<?php echo htmlspecialchars( $lang_code ); ?>" <?php echo $lang === $lang_code ? 'selected' : ''; ?>>
@@ -722,7 +802,7 @@ if ( ! empty( $segments ) && $new_platform_url == 'https://jointhefediverse.net/
 </div>
 
 <footer>
-	<p><?php echo __( t_send_to_friend ); ?> <input type="url" placeholder="<?php echo __( t_enter_friend_url ); ?>" id="friend-url" /></p>
+	<p><?php echo __( t_send_to_friend ); ?> <input type="url" placeholder="<?php echo __attr( t_enter_friend_url ); ?>" id="friend-url" /></p>
 	<p class="hosting"><?php echo __( t_idea_and_hosting ); ?> <a href="https://alex.kirk.at/">Alex Kirk</a>.
 		<a href="https://github.com/akirk/cantfollowyou"><?php echo __( t_contribute_github ); ?></a>
 	</p>
@@ -760,7 +840,7 @@ if ( ! empty( $segments ) && $new_platform_url == 'https://jointhefediverse.net/
 			if (url.length) {
 				window.location.href = '/' + url.join('/');
 			} else {
-				input.setCustomValidity("<?php echo __( t_sorry_unknown_platform ); ?>");
+				input.setCustomValidity("<?php echo __attr( t_sorry_unknown_platform ); ?>");
 				input.reportValidity();
 			}
 		}
@@ -823,3 +903,173 @@ if ( ! empty( $segments ) && $new_platform_url == 'https://jointhefediverse.net/
 
 </body>
 </html>
+	<?php
+}
+
+function render_translator_ui( $review_lang ) {
+	global $translations, $centralized_platforms, $groups, $new_platforms;
+
+	$sample_platforms = array( 'Twitter', 'Instagram', 'Facebook', 'TikTok' );
+	?><!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Translation Review - I can't follow you!</title>
+	<style>
+		body {
+			font-family: 'Arial', sans-serif;
+			background-color: #f5f5f5;
+			margin: 20px;
+			color: #333;
+		}
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+			background: white;
+			padding: 30px;
+			border-radius: 10px;
+			box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+		}
+		h1 { color: #007bff; margin-bottom: 30px; }
+		h2 { color: #495057; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-top: 40px; }
+		h3 { color: #6c757d; margin-top: 30px; }
+		.controls {
+			background: #e9ecef;
+			border-radius: 8px;
+			padding: 20px;
+			margin: 20px 0;
+		}
+		.platform-selector {
+			margin: 10px 0;
+		}
+		.platform-selector select, .platform-selector button {
+			padding: 8px 16px;
+			margin: 5px;
+			border: 1px solid #dee2e6;
+			border-radius: 4px;
+			background: white;
+			cursor: pointer;
+		}
+		.platform-selector button:hover {
+			background: #f8f9fa;
+		}
+		.platform-content {
+			display: none;
+			border: 2px solid #007bff;
+			border-radius: 8px;
+			margin: 20px 0;
+			overflow: hidden;
+		}
+		.platform-content.active {
+			display: block;
+		}
+		.button-secondary {
+			background: #6c757d;
+		}
+		.button-secondary:hover { background: #545b62; }
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>🌍 Translation Review<?php if ( $review_lang && $review_lang !== 'all' ) echo ' - ' . htmlspecialchars( $review_lang ); ?></h1>
+		<p>This page shows all translations for different platforms to help translators review and improve the content. Hover over text to see GitHub edit links.</p>
+
+		<div class="controls">
+			<h3>📝 Contribute Translations</h3>
+			<p>Want to add or improve translations? You can easily create a pull request on GitHub:</p>
+			<a href="https://github.com/akirk/cantfollowyou/compare" class="button" target="_blank">Create Pull Request</a>
+			<a href="https://github.com/akirk/cantfollowyou/issues/new?title=Translation%20suggestion&body=Language:%0APlatform:%0ASuggested%20text:%0A" class="button button-secondary" target="_blank">Report Translation Issue</a>
+
+			<div class="platform-selector">
+				<label for="platform-select">Select Platform to Review:</label>
+				<select id="platform-select">
+					<option value="">All Platforms</option>
+					<?php foreach ( $sample_platforms as $platform ) : ?>
+						<option value="<?php echo htmlspecialchars( strtolower( $platform ) ); ?>"><?php echo htmlspecialchars( $platform ); ?></option>
+					<?php endforeach; ?>
+				</select>
+				<button onclick="showAllPlatforms()">Show All</button>
+			</div>
+		</div>
+
+		<?php foreach ( $sample_platforms as $sample_platform ) : ?>
+		<div class="platform-content" id="platform-<?php echo htmlspecialchars( strtolower( $sample_platform ) ); ?>">
+			<?php
+			// Capture the main UI output for this platform
+			ob_start();
+
+			// Set language to review language or default
+			global $lang;
+			$original_lang = $lang;
+			if ( $review_lang && $review_lang !== 'all' && isset( $translations[$review_lang] ) ) {
+				$lang = $review_lang;
+			}
+
+			render_main_ui( $sample_platform, 'TestUser' );
+			$content = ob_get_clean();
+
+			// Restore original language
+			$lang = $original_lang;
+
+			echo $content;
+			?>
+		</div>
+		<?php endforeach; ?>
+
+		<div class="controls">
+			<h3>🚀 Quick Actions</h3>
+			<p>Ready to contribute? Here are some quick actions:</p>
+			<a href="https://github.com/akirk/cantfollowyou/fork" class="button" target="_blank">Fork Repository</a>
+			<a href="https://github.com/akirk/cantfollowyou/blob/add-translations/index.php" class="button button-secondary" target="_blank">View Source Code</a>
+			<a href="/" class="button button-secondary">← Back to Main Site</a>
+		</div>
+	</div>
+
+	<script>
+		function showPlatform(platform) {
+			// Hide all platform content
+			document.querySelectorAll('.platform-content').forEach(el => {
+				el.classList.remove('active');
+			});
+
+			if (platform) {
+				// Show selected platform
+				const el = document.getElementById('platform-' + platform);
+				if (el) {
+					el.classList.add('active');
+				}
+			} else {
+				// Show all platforms
+				document.querySelectorAll('.platform-content').forEach(el => {
+					el.classList.add('active');
+				});
+			}
+		}
+
+		function showAllPlatforms() {
+			document.getElementById('platform-select').value = '';
+			showPlatform('');
+		}
+
+		document.getElementById('platform-select').addEventListener('change', function() {
+			showPlatform(this.value);
+		});
+
+		// Show all platforms by default
+		showAllPlatforms();
+	</script>
+</body>
+</html>
+	<?php
+}
+
+// Translator review page
+if ( isset( $_GET['translate-review'] ) ) {
+	$review_lang = $_GET['translate-review'];
+	render_translator_ui( $review_lang );
+	exit;
+}
+
+// Render the main UI
+render_main_ui();
