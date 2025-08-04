@@ -28,6 +28,14 @@ define( 't_enter_friend_url', "Enter your friend's URL" );
 define( 't_sorry_unknown_platform', "Sorry, I don't know this platform (yet)" );
 define( 't_idea_and_hosting', 'Idea and hosting by' );
 define( 't_contribute_github', 'Thank you for helping with translations and links on GitHub!' );
+define( 't_video_title', 'Introducing the Fediverse' );
+define( 't_group_microblogging', 'Micro Blogging' );
+define( 't_group_image_sharing', 'Image Sharing' );
+define( 't_group_video_sharing', 'Video Sharing' );
+define( 't_group_audio_sharing', 'Audio Sharing / Podcasting' );
+define( 't_group_forums', 'Forums and Discussions' );
+define( 't_group_social_networks', 'Social Networks' );
+define( 't_group_events', 'Events' );
 
 
 $replace_no_technical_reason = array( 'on their platform' => 'on it' );
@@ -62,15 +70,256 @@ $translations = array(
 		t_sorry_unknown_platform => 'Entschuldigung, ich kenne diese Plattform (noch) nicht',
 		t_idea_and_hosting => 'Idee und Hosting von',
 		t_contribute_github => 'Danke, dass du mit Übersetzungen und Links auf GitHub hilfst!',
+		t_video_title => 'Einführung in das Fediverse',
+		t_group_microblogging => 'Mikroblogging',
+		t_group_image_sharing => 'Bilderaustausch',
+		t_group_video_sharing => 'Videoplattformen',
+		t_group_audio_sharing => 'Audio / Podcasting',
+		t_group_forums => 'Foren und Diskussionen',
+		t_group_social_networks => 'Soziale Netzwerke',
+		t_group_events => 'Veranstaltungen',
+	),
+	'fr' => array(
+		t_title => 'Je ne peux pas vous suivre !',
+		t_cant_follow_you_on_use_instead => 'Je ne peux pas vous suivre sur %s, utilisez %s à la place !',
+		t_language => 'Français',
+		t_hi => 'Salut %s,',
+		t_friend => 'Ami',
+		t_a_closed_platform => 'un réseau fermé et centralisé non spécifié',
+		t_this_closed_platform => 'ce réseau fermé',
+		t_the_fediverse => 'le Fédiverse',
+		t_want_to_follow_you => 'J\'ai vu que vous êtes sur %s et j\'aimerais vous suivre !',
+		t_cant_follow_from_elsewhere => 'Mais saviez-vous que <strong>parce que je ne suis pas utilisateur de %s</strong>, je ne peux pas vous suivre depuis ailleurs ?',
+		t_no_technical_reason => 'Il n\'y a aucune raison technique à cela, cette restriction est purement le choix de %s parce qu\'ils veulent plus d\'utilisateurs sur leur plateforme.',
+		t_alternative_open_web => 'Cependant, je crois que vous n\'avez pas besoin d\'être sur %s car <strong>il existe une alternative sur le web ouvert</strong> !',
+		t_called_fediverse => 'L\'alternative s\'appelle <strong>%s</strong> et fait partie du Fédiverse, qui n\'est pas contrôlé par une entité centrale et n\'impose donc pas de telles restrictions.',
+		t_join_us => 'Intéressé ? Rejoignez-nous et découvrez une meilleure façon de socialiser en ligne !',
+		t_open_alternative => 'La plupart des réseaux centralisés ont une alternative ouverte, cliquez pour les voir ici :',
+		t_what_makes_them_open => 'Qu\'est-ce qui rend ces plateformes plus ouvertes ?',
+		t_based_on_activitypub => 'Elles sont basées sur le protocole ActivityPub, un standard ouvert qui permet à tous ces services d\'être interopérables entre eux.',
+		t_what_makes_a_little_harder_to_use => 'Qu\'est-ce qui les rend un peu plus difficiles à utiliser ?',
+		t_need_to_choose_a_server => 'Parce qu\'elles ne sont pas centralisées, vous devez choisir un serveur (parfois appelé instance). Souvent financés par des dons ou des frais d\'adhésion, ils sont rarement gérés par des entreprises. Le choix peut être un peu accablant, mais vous serez aidé sur les sites d\'information respectifs :',
+		t_learn_more => 'En savoir plus sur le Fédiverse',
+		t_or => 'ou',
+		t_watch_video => 'Regarder "Introduction au Fédiverse"',
+		t_send_to_friend => 'Vous voulez envoyer un tel lien à votre ami ?',
+		t_enter_friend_url => 'Entrez l\'URL de votre ami',
+		t_sorry_unknown_platform => 'Désolé, je ne connais pas (encore) cette plateforme',
+		t_idea_and_hosting => 'Idée et hébergement par',
+		t_contribute_github => 'Merci d\'aider avec les traductions et les liens sur GitHub !',
+		t_video_title => 'Introduction au Fédiverse',
+		t_group_microblogging => 'Microblogging',
+		t_group_image_sharing => 'Partage d\'images',
+		t_group_video_sharing => 'Partage de vidéos',
+		t_group_audio_sharing => 'Partage audio / Podcasting',
+		t_group_forums => 'Forums et discussions',
+		t_group_social_networks => 'Réseaux sociaux',
+		t_group_events => 'Événements',
+	),
+	'it' => array(
+		t_title => 'Non posso seguirti!',
+		t_cant_follow_you_on_use_instead => 'Non posso seguirti su %s, usa %s invece!',
+		t_language => 'Italiano',
+		t_hi => 'Ciao %s,',
+		t_friend => 'Amico',
+		t_a_closed_platform => 'una rete chiusa e centralizzata non specificata',
+		t_this_closed_platform => 'questa rete chiusa',
+		t_the_fediverse => 'il Fediverso',
+		t_want_to_follow_you => 'Ho visto che sei su %s e vorrei seguirti!',
+		t_cant_follow_from_elsewhere => 'Ma sapevi che <strong>dato che non sono un utente di %s</strong>, non posso seguirti da altrove?',
+		t_no_technical_reason => 'Non c\'è nessuna ragione tecnica per questo, la restrizione è puramente una scelta di %s perché vogliono più utenti sulla loro piattaforma.',
+		t_alternative_open_web => 'Tuttavia, credo che tu non abbia bisogno di essere su %s perché <strong>c\'è un\'alternativa sul web aperto</strong>!',
+		t_called_fediverse => 'L\'alternativa si chiama <strong>%s</strong> ed è parte del Fediverso, che non è controllato da un\'entità centrale e quindi non impone tali restrizioni.',
+		t_join_us => 'Interessato? Unisciti a noi e scopri un modo migliore di socializzare online!',
+		t_open_alternative => 'La maggior parte delle reti centralizzate ha un\'alternativa aperta, clicca per vederle qui:',
+		t_what_makes_them_open => 'Cosa rende queste piattaforme più aperte?',
+		t_based_on_activitypub => 'Sono basate sul protocollo ActivityPub, uno standard aperto che permette a tutti questi servizi di essere interoperabili tra loro.',
+		t_what_makes_a_little_harder_to_use => 'Cosa le rende un po\' più difficili da usare?',
+		t_need_to_choose_a_server => 'Poiché non sono centralizzate, devi scegliere un server (a volte chiamato istanza). Spesso finanziati tramite donazioni o quote associative, sono raramente gestiti da aziende. La scelta può essere un po\' opprimente, ma sarai aiutato sui rispettivi siti informativi:',
+		t_learn_more => 'Scopri di più sul Fediverso',
+		t_or => 'o',
+		t_watch_video => 'Guarda "Introduzione al Fediverso"',
+		t_send_to_friend => 'Vuoi inviare un link del genere al tuo amico?',
+		t_enter_friend_url => 'Inserisci l\'URL del tuo amico',
+		t_sorry_unknown_platform => 'Scusami, non conosco (ancora) questa piattaforma',
+		t_idea_and_hosting => 'Idea e hosting di',
+		t_contribute_github => 'Grazie per aver aiutato con traduzioni e link su GitHub!',
+		t_video_title => 'Introduzione al Fediverso',
+		t_group_microblogging => 'Microblogging',
+		t_group_image_sharing => 'Condivisione immagini',
+		t_group_video_sharing => 'Condivisione video',
+		t_group_audio_sharing => 'Condivisione audio / Podcasting',
+		t_group_forums => 'Forum e discussioni',
+		t_group_social_networks => 'Reti sociali',
+		t_group_events => 'Eventi',
+	),
+	'es' => array(
+		t_title => '¡No puedo seguirte!',
+		t_cant_follow_you_on_use_instead => '¡No puedo seguirte en %s, usa %s en su lugar!',
+		t_language => 'Español',
+		t_hi => 'Hola %s,',
+		t_friend => 'Amigo',
+		t_a_closed_platform => 'una red cerrada y centralizada no especificada',
+		t_this_closed_platform => 'esta red cerrada',
+		t_the_fediverse => 'el Fediverso',
+		t_want_to_follow_you => '¡Vi que estás en %s y me gustaría seguirte!',
+		t_cant_follow_from_elsewhere => 'Pero, ¿sabías que <strong>como no soy usuario de %s</strong>, no puedo seguirte desde otro lugar?',
+		t_no_technical_reason => 'No hay razón técnica para esto, la restricción es puramente la elección de %s porque quieren más usuarios en su plataforma.',
+		t_alternative_open_web => 'Sin embargo, creo que no necesitas estar en %s porque <strong>¡hay una alternativa en la web abierta</strong>!',
+		t_called_fediverse => 'La alternativa se llama <strong>%s</strong> y es parte del Fediverso, que no está controlado por una entidad central y por lo tanto no impone tales restricciones.',
+		t_join_us => '¿Interesado? ¡Únete a nosotros y descubre una mejor manera de socializar en línea!',
+		t_open_alternative => 'La mayoría de las redes centralizadas tienen una alternativa abierta, haz clic para verlas aquí:',
+		t_what_makes_them_open => '¿Qué hace que estas plataformas sean más abiertas?',
+		t_based_on_activitypub => 'Están basadas en el protocolo ActivityPub, un estándar abierto que permite que todos estos servicios sean interoperables entre sí.',
+		t_what_makes_a_little_harder_to_use => '¿Qué las hace un poco más difíciles de usar?',
+		t_need_to_choose_a_server => 'Como no están centralizadas, necesitas elegir un servidor (a veces llamado instancia). A menudo financiados a través de donaciones o cuotas de membresía, rara vez son dirigidos por empresas. La elección puede ser un poco abrumadora, pero serás ayudado en los respectivos sitios de información:',
+		t_learn_more => 'Aprende más sobre el Fediverso',
+		t_or => 'o',
+		t_watch_video => 'Ver "Introducción al Fediverso"',
+		t_send_to_friend => '¿Quieres enviar un enlace así a tu amigo?',
+		t_enter_friend_url => 'Ingresa la URL de tu amigo',
+		t_sorry_unknown_platform => 'Lo siento, no conozco (aún) esta plataforma',
+		t_idea_and_hosting => 'Idea y hosting por',
+		t_contribute_github => '¡Gracias por ayudar con traducciones y enlaces en GitHub!',
+		t_video_title => 'Introducción al Fediverso',
+		t_group_microblogging => 'Microblogging',
+		t_group_image_sharing => 'Compartir imágenes',
+		t_group_video_sharing => 'Compartir videos',
+		t_group_audio_sharing => 'Compartir audio / Podcasting',
+		t_group_forums => 'Foros y discusiones',
+		t_group_social_networks => 'Redes sociales',
+		t_group_events => 'Eventos',
+	),
+	'pt-br' => array(
+		t_title => 'Não posso te seguir!',
+		t_cant_follow_you_on_use_instead => 'Não posso te seguir no %s, use %s em vez disso!',
+		t_language => 'Português (Brasil)',
+		t_hi => 'Oi %s,',
+		t_friend => 'Amigo',
+		t_a_closed_platform => 'uma rede fechada e centralizada não especificada',
+		t_this_closed_platform => 'esta rede fechada',
+		t_the_fediverse => 'o Fediverso',
+		t_want_to_follow_you => 'Vi que você está no %s e gostaria de te seguir!',
+		t_cant_follow_from_elsewhere => 'Mas você sabia que <strong>porque não sou usuário do %s</strong>, não posso te seguir de outros lugares?',
+		t_no_technical_reason => 'Não há razão técnica para isso, a restrição é puramente uma escolha do %s porque eles querem mais usuários em sua plataforma.',
+		t_alternative_open_web => 'No entanto, acredito que você não precisa estar no %s porque <strong>há uma alternativa na web aberta</strong>!',
+		t_called_fediverse => 'A alternativa se chama <strong>%s</strong> e faz parte do Fediverso, que não é controlado por uma entidade central e, portanto, não impõe tais restrições.',
+		t_join_us => 'Interessado? Junte-se a nós e descubra uma maneira melhor de socializar online!',
+		t_open_alternative => 'A maioria das redes centralizadas tem uma alternativa aberta, clique para vê-las aqui:',
+		t_what_makes_them_open => 'O que torna essas plataformas mais abertas?',
+		t_based_on_activitypub => 'Elas são baseadas no protocolo ActivityPub, um padrão aberto que permite que todos esses serviços sejam interoperáveis entre si.',
+		t_what_makes_a_little_harder_to_use => 'O que as torna um pouco mais difíceis de usar?',
+		t_need_to_choose_a_server => 'Como não são centralizadas, você precisa escolher um servidor (às vezes chamado de instância). Frequentemente financiados através de doações ou taxas de associação, raramente são administrados por empresas. A escolha pode ser um pouco esmagadora, mas você será ajudado nos respectivos sites de informação:',
+		t_learn_more => 'Saiba mais sobre o Fediverso',
+		t_or => 'ou',
+		t_watch_video => 'Assistir "Introdução ao Fediverso"',
+		t_send_to_friend => 'Quer enviar um link assim para seu amigo?',
+		t_enter_friend_url => 'Digite a URL do seu amigo',
+		t_sorry_unknown_platform => 'Desculpe, não conheço (ainda) esta plataforma',
+		t_idea_and_hosting => 'Ideia e hospedagem por',
+		t_contribute_github => 'Obrigado por ajudar com traduções e links no GitHub!',
+		t_video_title => 'Introdução ao Fediverso',
+		t_group_microblogging => 'Microblogging',
+		t_group_image_sharing => 'Compartilhamento de imagens',
+		t_group_video_sharing => 'Compartilhamento de vídeos',
+		t_group_audio_sharing => 'Compartilhamento de áudio / Podcasting',
+		t_group_forums => 'Fóruns e discussões',
+		t_group_social_networks => 'Redes sociais',
+		t_group_events => 'Eventos',
+	),
+	'pt' => array(
+		t_title => 'Não posso seguir-te!',
+		t_cant_follow_you_on_use_instead => 'Não posso seguir-te no %s, usa %s em vez disso!',
+		t_language => 'Português (Portugal)',
+		t_hi => 'Olá %s,',
+		t_friend => 'Amigo',
+		t_a_closed_platform => 'uma rede fechada e centralizada não especificada',
+		t_this_closed_platform => 'esta rede fechada',
+		t_the_fediverse => 'o Fediverso',
+		t_want_to_follow_you => 'Vi que estás no %s e gostaria de seguir-te!',
+		t_cant_follow_from_elsewhere => 'Mas sabias que <strong>porque não sou utilizador do %s</strong>, não posso seguir-te de outros locais?',
+		t_no_technical_reason => 'Não há razão técnica para isto, a restrição é puramente uma escolha do %s porque eles querem mais utilizadores na sua plataforma.',
+		t_alternative_open_web => 'No entanto, acredito que não precisas de estar no %s porque <strong>há uma alternativa na web aberta</strong>!',
+		t_called_fediverse => 'A alternativa chama-se <strong>%s</strong> e faz parte do Fediverso, que não é controlado por uma entidade central e, portanto, não impõe tais restrições.',
+		t_join_us => 'Interessado? Junta-te a nós e descobre uma melhor maneira de socializar online!',
+		t_open_alternative => 'A maioria das redes centralizadas tem uma alternativa aberta, clica para as veres aqui:',
+		t_what_makes_them_open => 'O que torna estas plataformas mais abertas?',
+		t_based_on_activitypub => 'Elas são baseadas no protocolo ActivityPub, um padrão aberto que permite que todos estes serviços sejam interoperáveis entre si.',
+		t_what_makes_a_little_harder_to_use => 'O que as torna um pouco mais difíceis de usar?',
+		t_need_to_choose_a_server => 'Como não são centralizadas, precisas de escolher um servidor (por vezes chamado instância). Frequentemente financiados através de doações ou taxas de associação, raramente são administrados por empresas. A escolha pode ser um pouco avassaladora, mas serás ajudado nos respectivos sites de informação:',
+		t_learn_more => 'Sabe mais sobre o Fediverso',
+		t_or => 'ou',
+		t_watch_video => 'Ver "Introdução ao Fediverso"',
+		t_send_to_friend => 'Queres enviar uma ligação assim ao teu amigo?',
+		t_enter_friend_url => 'Introduz o URL do teu amigo',
+		t_sorry_unknown_platform => 'Desculpa, não conheço (ainda) esta plataforma',
+		t_idea_and_hosting => 'Ideia e alojamento por',
+		t_contribute_github => 'Obrigado por ajudares com traduções e ligações no GitHub!',
+		t_video_title => 'Introdução ao Fediverso',
+		t_group_microblogging => 'Microblogging',
+		t_group_image_sharing => 'Partilha de imagens',
+		t_group_video_sharing => 'Partilha de vídeos',
+		t_group_audio_sharing => 'Partilha de áudio / Podcasting',
+		t_group_forums => 'Fóruns e discussões',
+		t_group_social_networks => 'Redes sociais',
+		t_group_events => 'Eventos',
+	),
+	'gl' => array(
+		t_title => 'Non podo seguirte!',
+		t_cant_follow_you_on_use_instead => 'Non podo seguirte en %s, usa %s no seu lugar!',
+		t_language => 'Galego',
+		t_hi => 'Ola %s,',
+		t_friend => 'Amigo',
+		t_a_closed_platform => 'unha rede pechada e centralizada non especificada',
+		t_this_closed_platform => 'esta rede pechada',
+		t_the_fediverse => 'o Fediverso',
+		t_want_to_follow_you => 'Vin que estás en %s e gustaríame seguirte!',
+		t_cant_follow_from_elsewhere => 'Pero sabías que <strong>como non son usuario de %s</strong>, non podo seguirte desde outro lugar?',
+		t_no_technical_reason => 'Non hai razón técnica para isto, a restrición é puramente unha elección de %s porque queren máis usuarios na súa plataforma.',
+		t_alternative_open_web => 'Sen embargo, creo que non necesitas estar en %s porque <strong>hai unha alternativa na web aberta</strong>!',
+		t_called_fediverse => 'A alternativa chámase <strong>%s</strong> e forma parte do Fediverso, que non está controlado por unha entidade central e polo tanto non impón tales restricións.',
+		t_join_us => 'Interesado? Únete a nós e descobre unha mellor maneira de socializar en liña!',
+		t_open_alternative => 'A maioría das redes centralizadas teñen unha alternativa aberta, preme para velas aquí:',
+		t_what_makes_them_open => 'Que fai que estas plataformas sexan máis abertas?',
+		t_based_on_activitypub => 'Están baseadas no protocolo ActivityPub, un estándar aberto que permite que todos estes servizos sexan interoperables entre si.',
+		t_what_makes_a_little_harder_to_use => 'Que as fai un pouco máis difíciles de usar?',
+		t_need_to_choose_a_server => 'Como non están centralizadas, necesitas elixir un servidor (ás veces chamado instancia). A miúdo financiados a través de doazóns ou cuotas de membresía, raramente son dirixidos por empresas. A elección pode ser un pouco abrumadora, pero serás axudado nos respectivos sitios de información:',
+		t_learn_more => 'Aprende máis sobre o Fediverso',
+		t_or => 'ou',
+		t_watch_video => 'Ver "Introdución ao Fediverso"',
+		t_send_to_friend => 'Queres enviar unha ligazón así ao teu amigo?',
+		t_enter_friend_url => 'Introduce o URL do teu amigo',
+		t_sorry_unknown_platform => 'Perdón, non coñezo (aínda) esta plataforma',
+		t_idea_and_hosting => 'Idea e hospedaxe por',
+		t_contribute_github => 'Grazas por axudar con traducións e ligazóns en GitHub!',
+		t_video_title => 'Introdución ao Fediverso',
+		t_group_microblogging => 'Microblogging',
+		t_group_image_sharing => 'Compartir imaxes',
+		t_group_video_sharing => 'Compartir vídeos',
+		t_group_audio_sharing => 'Compartir audio / Podcasting',
+		t_group_forums => 'Foros e discusións',
+		t_group_social_networks => 'Redes sociais',
+		t_group_events => 'Eventos',
 	),
 );
 
 $lang = 'en';
 $browser_lang = substr( $_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2 );
-if ( isset( $translations[$browser_lang] ) ) {
+$your_lang = 'en';
+
+// Handle Portuguese variants
+$accept_lang = strtolower( $_SERVER['HTTP_ACCEPT_LANGUAGE'] );
+if ( strpos( $accept_lang, 'pt-br' ) !== false || strpos( $accept_lang, 'pt_br' ) !== false ) {
+	$your_lang = 'pt-br';
+} elseif ( $browser_lang === 'pt' ) {
+	$your_lang = 'pt';
+} elseif ( $browser_lang === 'gl' ) {
+	$your_lang = 'gl';
+} elseif ( isset( $translations[$browser_lang] ) ) {
 	$your_lang = $browser_lang;
 }
-if ( isset( $_GET['lang'] ) && isset( $translations[$_GET['lang']] ) || 'en' === $_GET['lang'] ) {
+
+if ( isset( $_GET['lang'] ) && ( isset( $translations[$_GET['lang']] ) || 'en' === $_GET['lang'] ) ) {
 	$lang = $_GET['lang'];
 } else {
 	$lang = $your_lang;
@@ -79,7 +328,30 @@ switch ( $lang ) {
 	case 'de':
 		$replace_no_technical_reason = array( 'von dieser ' => 'dieser ', 'ihrer Plattform' => 'darauf' );
 		$replace_called_fediverse = array( ' und ist Teil des Fediverse, das' => ', welches' );
-
+		break;
+	case 'fr':
+		$replace_no_technical_reason = array( 'sur leur plateforme' => 'dessus' );
+		$replace_called_fediverse = array( ' et fait partie du Fédiverse,' => '' );
+		break;
+	case 'it':
+		$replace_no_technical_reason = array( 'sulla loro piattaforma' => 'su di essa' );
+		$replace_called_fediverse = array( ' ed è parte del Fediverso,' => '' );
+		break;
+	case 'es':
+		$replace_no_technical_reason = array( 'en su plataforma' => 'en ella' );
+		$replace_called_fediverse = array( ' y es parte del Fediverso,' => '' );
+		break;
+	case 'pt-br':
+		$replace_no_technical_reason = array( 'em sua plataforma' => 'nela' );
+		$replace_called_fediverse = array( ' e faz parte do Fediverso,' => '' );
+		break;
+	case 'pt':
+		$replace_no_technical_reason = array( 'na sua plataforma' => 'nela' );
+		$replace_called_fediverse = array( ' e faz parte do Fediverso,' => '' );
+		break;
+	case 'gl':
+		$replace_no_technical_reason = array( 'na súa plataforma' => 'nela' );
+		$replace_called_fediverse = array( ' e forma parte do Fediverso,' => '' );
 		break;
 }
 
@@ -122,31 +394,31 @@ $new_platforms = array(
 );
 
 $groups = array(
-	'Micro Blogging' => array(
+	t_group_microblogging => array(
 		array( 'X', 'Twitter', 'Tumblr' ),
 		array( 'Mastodon', 'Misskey', 'Pleroma' ),
 	),
-	'Image Sharing' => array(
+	t_group_image_sharing => array(
 		array( 'Instagram' ),
 		array( 'Pixelfed' ),
 	),
-	'Video Sharing' => array(
+	t_group_video_sharing => array(
 		array( 'YouTube', 'TikTok', 'Vimeo' ),
 		array( 'PeerTube' ),
 	),
-	'Audio Sharing / Podcasting' => array(
+	t_group_audio_sharing => array(
 		array( 'Soundcloud', 'Bandcamp' ),
 		array( 'Castopod', 'Funkwhale' ),
 	),
-	'Forums and Discussions' => array(
+	t_group_forums => array(
 		array( 'Reddit' ),
 		array( 'Lemmy' ),
 	),
-	'Social Networks' => array(
+	t_group_social_networks => array(
 		array( 'Facebook' ),
 		array( 'Friendica' ),
 	),
-	'Events' => array(
+	t_group_events => array(
 		array( 'Facebook' ),
 		array( 'Mobilizon' ),
 	),
@@ -423,7 +695,7 @@ if ( ! empty( $segments ) && $new_platform_url == 'https://jointhefediverse.net/
 		<table>
 			<?php foreach ( $groups as $group_name => $platform_groups ) : ?>
 				<tr>
-					<th colspan="3"><?php echo htmlspecialchars( $group_name ); ?></th>
+					<th colspan="3"><?php echo htmlspecialchars( __( $group_name ) ); ?></th>
 				</tr>
 				<tr>
 				<?php foreach ( $platform_groups as $k => $platform_group ) : ?>
@@ -446,7 +718,7 @@ if ( ! empty( $segments ) && $new_platform_url == 'https://jointhefediverse.net/
 		</table>
 	</details>
 
-	<a href="https://jointhefediverse.net" class="button"><?php echo __( t_learn_more ); ?></a> <span class="newline"><?php echo __( t_or ); ?> <a href="https://videos.elenarossini.com/w/64VuNCccZNrP4u9MfgbhkN"><?php echo __( t_watch_video ); ?></a>.</span>
+	<a href="https://jointhefediverse.net" class="button"><?php echo __( t_learn_more ); ?></a> <span class="newline"><?php echo __( t_or ); ?> <a href="https://videos.elenarossini.com/w/64VuNCccZNrP4u9MfgbhkN"><?php echo str_replace( __( t_video_title ), '"' . __( t_video_title ) . '"', __( t_watch_video ) ); ?></a>.</span>
 </div>
 
 <footer>
