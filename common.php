@@ -162,27 +162,48 @@ function _t_sprintf_html( $key, ...$args ) {
 	$fallback_text = isset( $english_translations[$key] ) ? $english_translations[$key] : ucfirst( str_replace( '_', ' ', $key ) );
 	$translated_text = isset( $translations[$key] ) ? $translations[$key] : $fallback_text;
 	
-	// Apply sprintf to the plain text
-	$formatted_text = sprintf( $translated_text, ...$args );
-	
-	// If we're in review mode, wrap the final result (but don't escape HTML)
+	// If we're in review mode, we need to handle this carefully to avoid nested spans
 	if ( isset( $_GET['translate-review'] ) ) {
+		// For HTML sprintf, we need to apply sprintf to the raw translated text first,
+		// then create a single editable span around the entire result
+		$formatted_text = sprintf( $translated_text, ...$args );
+		
 		// Check if this is untranslated for new language creation
 		$available_languages = get_available_languages();
 		$is_new_language = ( $_GET['translate-review'] === 'new' || ! array_key_exists( $_GET['translate-review'], $available_languages ) );
 		$is_untranslated = $is_new_language && ( ! isset( $translations[$key] ) || $translated_text === $fallback_text );
 		$untranslated_class = $is_untranslated ? ' untranslated' : '';
 
+		// Store the plain text version for data attributes
+		$plain_formatted = $formatted_text;
+		
+		// Remove any existing editable spans from the arguments to get clean display
+		$clean_args = array();
+		foreach ( $args as $arg ) {
+			if ( is_string( $arg ) && strpos( $arg, 'editable-translation' ) !== false ) {
+				// Extract just the text content from editable spans
+				$clean_arg = preg_replace( '/<span[^>]*class="[^"]*editable-translation[^"]*"[^>]*>(.*?)<\/span>/', '$1', $arg );
+				$clean_args[] = $clean_arg;
+			} else {
+				$clean_args[] = $arg;
+			}
+		}
+		
+		// Create the formatted text with clean arguments for display
+		$display_formatted = sprintf( $translated_text, ...$clean_args );
+
 		return '<span class="editable-translation' . $untranslated_class . '"
 			      data-key="' . htmlspecialchars( $key ) . '" 
 			      data-original="' . htmlspecialchars( $translated_text ) . '"
-			      data-formatted="' . htmlspecialchars( $formatted_text ) . '"
+			      data-formatted="' . htmlspecialchars( $plain_formatted ) . '"
 			      data-escape-html="0"
 			      contenteditable="true">' . 
-			$formatted_text . 
+			$display_formatted . 
 		   '</span>';
 	}
 	
+	// Apply sprintf to the plain text
+	$formatted_text = sprintf( $translated_text, ...$args );
 	return $formatted_text;
 }
 
@@ -539,7 +560,11 @@ function render_main_ui( $target_platform = null, $target_username = null ) {
 		<?php echo _t_sprintf( 'alternative_open_web', htmlspecialchars( $this_platform ) ); ?>
 	</p>
 	<p>
-		<?php echo str_replace( array_keys( $replace_called_fediverse ), array_values( $replace_called_fediverse ), _t_sprintf_html( 'called_fediverse', '<a href="' . $new_platform_url . '">' . htmlspecialchars( $new_platform ) . '</a>' ) ); ?>
+		<?php 
+		// Get plain text version of new_platform for use in sprintf to avoid nested spans
+		$new_platform_text = isset( $_GET['translate-review'] ) ? _t_attr( 'the_fediverse' ) : $new_platform;
+		echo str_replace( array_keys( $replace_called_fediverse ), array_values( $replace_called_fediverse ), _t_sprintf_html( 'called_fediverse', '<a href="' . $new_platform_url . '">' . htmlspecialchars( $new_platform_text ) . '</a>' ) ); 
+		?>
 	</p>
 	<p>
 		<?php echo _t( 'join_us' ); ?>
@@ -548,7 +573,32 @@ function render_main_ui( $target_platform = null, $target_username = null ) {
 		<summary><?php echo _t( 'open_alternative' ); ?></summary>
 		<blockquote>
 		<p class="q"><?php echo _t( 'what_makes_them_open' ); ?></p>
-		<p class="a"><?php echo str_replace( 'ActivityPub', '<a href="https://activitypub.rocks/">ActivityPub</a>', _t( 'based_on_activitypub', false ) ); ?></p>
+		<p class="a"><?php 
+		if ( isset( $_GET['translate-review'] ) ) {
+			// In review mode, get the raw translation and do str_replace, then wrap in editable span
+			$english_translations = load_translations( 'en' );
+			$fallback_text = isset( $english_translations['based_on_activitypub'] ) ? $english_translations['based_on_activitypub'] : 'based_on_activitypub';
+			$translated_text = isset( $translations['based_on_activitypub'] ) ? $translations['based_on_activitypub'] : $fallback_text;
+			$processed_text = str_replace( 'ActivityPub', '<a href="https://activitypub.rocks/">ActivityPub</a>', $translated_text );
+			
+			// Check if this is untranslated for new language creation
+			$available_languages = get_available_languages();
+			$is_new_language = ( $_GET['translate-review'] === 'new' || ! array_key_exists( $_GET['translate-review'], $available_languages ) );
+			$is_untranslated = $is_new_language && ( ! isset( $translations['based_on_activitypub'] ) || $translated_text === $fallback_text );
+			$untranslated_class = $is_untranslated ? ' untranslated' : '';
+			
+			echo '<span class="editable-translation' . $untranslated_class . '"
+				      data-key="based_on_activitypub" 
+				      data-original="' . htmlspecialchars( $translated_text ) . '"
+				      data-escape-html="0"
+				      contenteditable="true">' . 
+				$processed_text . 
+			   '</span>';
+		} else {
+			// Normal mode, use str_replace
+			echo str_replace( 'ActivityPub', '<a href="https://activitypub.rocks/">ActivityPub</a>', _t( 'based_on_activitypub', false ) );
+		}
+		?></p>
 		<p class="q"><?php echo _t( 'what_makes_a_little_harder_to_use' ); ?></p>
 		<p class="a"><?php echo _t( 'need_to_choose_a_server' ); ?></p>
 		</blockquote>

@@ -5,11 +5,23 @@ $lang = null;
 require_once 'common.php';
 
 $review_lang = $_GET['lang'] ?? null;
+
+// Set up translate-review mode for common.php functions
+if ( $review_lang ) {
+	$_GET['translate-review'] = $review_lang;
+}
 $available_languages = get_available_languages();
 $sample_platforms = array_merge( array( 'unknown' ), array_keys( $centralized_platforms ) );
 
+if ( $review_lang !== 'new' && ! array_key_exists( $review_lang, $available_languages ) ) {
+	// If the specified language is not available, redirect to main translation page
+	header( 'Location: /translate.php' );
+	exit;
+}
+
 // Check if this is a new language being created
-$is_new_language = ( $review_lang === 'new' || ( $review_lang && ! array_key_exists( $review_lang, $available_languages ) ) );
+$is_new_language = $review_lang === 'new';
+
 
 // If no language specified, show language selector
 if ( ! $review_lang ) {
@@ -325,6 +337,71 @@ if ( ! $review_lang ) {
 			color: #6c757d;
 			font-size: 12px;
 		}
+		.additional-strings {
+			background: #f8f9fa;
+			border: 1px solid #dee2e6;
+			border-radius: 8px;
+			padding: 20px;
+			margin: 30px 0;
+		}
+		.additional-strings h2 {
+			margin-top: 0;
+			color: #495057;
+		}
+		.additional-strings-grid {
+			display: grid;
+			gap: 15px;
+			margin-top: 20px;
+		}
+		.string-item {
+			background: white;
+			border: 1px solid #dee2e6;
+			border-radius: 6px;
+			padding: 15px;
+		}
+		.string-key {
+			margin-bottom: 8px;
+		}
+		.string-key code {
+			background: #e9ecef;
+			padding: 2px 6px;
+			border-radius: 3px;
+			font-size: 13px;
+			color: #495057;
+		}
+		.string-english {
+			margin-bottom: 10px;
+			color: #6c757d;
+		}
+		.string-translation {
+			font-weight: 500;
+		}
+		.editable-translation.additional-string {
+			display: block;
+			width: 100%;
+			padding: 8px 12px;
+			border: 1px solid rgba(255, 193, 7, 0.5);
+			border-radius: 4px;
+			background: rgba(255, 255, 0, 0.05);
+			min-height: 20px;
+		}
+		.editable-translation.additional-string:hover {
+			background: rgba(255, 255, 0, 0.1);
+			border-color: rgba(255, 193, 7, 0.8);
+		}
+		.editable-translation.additional-string:focus {
+			background: rgba(255, 255, 0, 0.15);
+			border-color: #ffc107;
+		}
+		.editable-translation.additional-string.modified {
+			background: rgba(40, 167, 69, 0.05);
+			border-color: rgba(40, 167, 69, 0.6);
+		}
+		.editable-translation.additional-string.untranslated {
+			background: rgba(220, 53, 69, 0.1);
+			border-color: #dc3545;
+			border-width: 2px;
+		}
 	</style>
 </head>
 <body>
@@ -353,15 +430,17 @@ if ( ! $review_lang ) {
 		<p>This page shows all translations for different platforms with in-place editing. Click on any highlighted text to edit it directly, then export your changes as JSON.</p>
 		<?php endif; ?>
 
-		<p><a href="?translate-review" class="button button-secondary">← Choose Different Language</a></p>
+		<p><a href="?" class="button button-secondary">← Choose Different Language</a></p>
 
 		<?php foreach ( $sample_platforms as $sample_platform ) : ?>
 		<div class="platform-content" id="platform-<?php echo htmlspecialchars( strtolower( $sample_platform ) ); ?>">
 			<?php
 			// Set language to review language or default
-			global $lang, $translations;
+			global $lang, $translations, $your_lang;
 			$original_lang = $lang;
 			$original_translations = $translations;
+			$original_your_lang = $your_lang ?? 'en';
+			
 			if ( $is_new_language ) {
 				// For new languages, show English content
 				$lang = 'en';
@@ -373,18 +452,85 @@ if ( ! $review_lang ) {
 					$translations = array();
 				}
 			}
+			
+			// Set your_lang for the translator UI
+			$your_lang = $lang;
 
 			// Use a special flag to render only content for translator UI
 			$_GET['translator-content-only'] = true;
 			render_main_ui( $sample_platform, 'TestUser' );
 			unset( $_GET['translator-content-only'] );
 
-			// Restore original language
+			// Restore original values
 			$lang = $original_lang;
 			$translations = $original_translations;
+			$your_lang = $original_your_lang;
 			?>
 		</div>
 		<?php endforeach; ?>
+
+		<div class="additional-strings">
+			<h2>📝 Additional Translation Strings</h2>
+			<p>These strings don't appear in the inline editing above but are used throughout the application:</p>
+
+			<?php
+			// Get all available translation keys
+			$english_translations = load_translations( 'en' );
+			$current_translations = array();
+			if ( $is_new_language ) {
+				$current_translations = array();
+			} elseif ( $review_lang && array_key_exists( $review_lang, $available_languages ) ) {
+				$current_translations = load_translations( $review_lang ) ?: array();
+			}
+
+			// Define which strings appear in inline editing (these we'll skip)
+			$inline_strings = array(
+				'hi', 'want_to_follow_you', 'cant_follow_from_elsewhere', 'no_technical_reason',
+				'alternative_open_web', 'called_fediverse', 'join_us', 'open_alternative',
+				'what_makes_them_open', 'based_on_activitypub', 'what_makes_a_little_harder_to_use',
+				'need_to_choose_a_server', 'learn_more', 'or', 'watch_video', 'send_to_friend',
+				'idea_and_hosting', 'contribute_github'
+			);
+
+			// Add group strings that appear in inline editing
+			$group_keys = array( 'group_microblogging', 'group_image_sharing', 'group_video_sharing',
+			                    'group_audio_sharing', 'group_forums', 'group_social_networks', 'group_events' );
+			$inline_strings = array_merge( $inline_strings, $group_keys );
+
+			// Get strings that don't appear in inline editing
+			$additional_strings = array();
+			foreach ( $english_translations as $key => $value ) {
+				if ( ! in_array( $key, $inline_strings ) ) {
+					$additional_strings[$key] = $value;
+				}
+			}
+			?>
+
+			<div class="additional-strings-grid">
+				<?php foreach ( $additional_strings as $key => $english_text ) : ?>
+				<?php
+				$current_text = isset( $current_translations[$key] ) ? $current_translations[$key] : $english_text;
+				$is_untranslated = $is_new_language && ( ! isset( $current_translations[$key] ) || $current_text === $english_text );
+				$untranslated_class = $is_untranslated ? ' untranslated' : '';
+				?>
+				<div class="string-item">
+					<div class="string-key">
+						<code><?php echo htmlspecialchars( $key ); ?></code>
+					</div>
+					<div class="string-english">
+						<small><strong>English:</strong> <?php echo htmlspecialchars( $english_text ); ?></small>
+					</div>
+					<div class="string-translation">
+						<span class="editable-translation additional-string<?php echo $untranslated_class; ?>"
+						      data-key="<?php echo htmlspecialchars( $key ); ?>"
+						      data-original="<?php echo htmlspecialchars( $current_text ); ?>"
+						      data-escape-html="1"
+						      contenteditable="true"><?php echo htmlspecialchars( $current_text ); ?></span>
+					</div>
+				</div>
+				<?php endforeach; ?>
+			</div>
+		</div>
 
 		<div class="controls">
 			<div id="json-preview">
@@ -394,9 +540,13 @@ if ( ! $review_lang ) {
 			<div class="translation-stats">
 				<span>Modified: <span id="modified-count">0</span> translations</span>
 				<button id="export-json" class="button" disabled>📥 Export JSON</button>
-				<button id="copy-json" class="button button-secondary" disabled>📋 Copy to Clipboard</button>
-				<button id="reset-all" class="button button-secondary">🔄 Reset All Changes</button>
 			</div>
+
+			<h2>Contribute your translations</h2>
+
+			<div>1. <button id="copy-json" class="button" disabled>📋 Copy to Clipboard</button></div>
+			<div>2. <a id="export-json" class="button" href="https://github.com/akirk/cantfollowyou/edit/main/translations/<?php echo $review_lang; ?>.json">Edit the file on Github</a> and paste the new JSON</div>
+			<div>3. Submit the Pull Request at Github</div>
 		</div>
 
 	</div>
@@ -553,6 +703,12 @@ if ( ! $review_lang ) {
 			}
 		}
 
+		function refreshPlatformPreviews() {
+			// This would require reloading the platform content, which is complex
+			// For now, we'll just show a message to the user that some changes may require page reload
+			console.log('Platform preview refresh needed - some changes may require page reload to see in preview');
+		}
+
 		// Initialize when page loads
 		document.addEventListener('DOMContentLoaded', function() {
 			// Set up editable translations
@@ -617,6 +773,13 @@ if ( ! $review_lang ) {
 					// Sync this change to all other elements with the same key
 					syncTranslationKey(key, current, finalValue);
 					
+					// Special handling for strings that are used in sprintf but also appear as additional strings
+					// If someone edits "the_fediverse" in additional strings, we need to refresh the inline preview
+					if (this.classList.contains('additional-string') && (key === 'the_fediverse' || key === 'friend' || key === 'a_closed_platform' || key === 'this_closed_platform')) {
+						// Refresh all platform previews to show the updated values
+						refreshPlatformPreviews();
+					}
+
 					updateModificationCount();
 				});
 
@@ -699,6 +862,18 @@ if ( ! $review_lang ) {
 					// Don't update the element that triggered the change
 					if (element === document.activeElement) return;
 					
+					// Handle additional strings (they're simple text, no formatting)
+					if (element.classList.contains('additional-string')) {
+						element.textContent = displayValue;
+						if (templateValue !== element.dataset.original) {
+							element.classList.add('modified');
+							element.classList.remove('untranslated');
+						} else {
+							element.classList.remove('modified');
+						}
+						return;
+					}
+
 					// Update the content
 					const original = element.dataset.original;
 					const formatted = element.dataset.formatted;
